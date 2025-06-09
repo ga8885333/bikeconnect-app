@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 騎騎 App - 高保真原型
 
 ## 項目概述
@@ -131,3 +132,6 @@
 © 2023 騎騎 App. All rights reserved.
 
 本項目為高保真原型設計，僅用於展示和開發參考。 
+=======
+# Bike-socialapp
+>>>>>>> 2895190d4dce1f2b48aab77f4c018631bfdc4b1b
