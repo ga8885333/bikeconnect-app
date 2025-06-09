@@ -1,0 +1,212 @@
+{
+  "stores": [
+    {
+      "id": "1",
+      "name": "阿明機車行",
+      "type": "repair",
+      "location": {
+        "lat": 25.0330,
+        "lng": 121.5654
+      },
+      "address": "台北市大安區信義路四段123號",
+      "phone": "02-2345-6789",
+      "description": "專業機車買賣、維修保養，超過20年經驗",
+      "openHours": "09:00-21:00",
+      "rating": 4.5,
+      "image": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300",
+      "services": ["維修", "保養", "買賣", "改裝"],
+      "priceRange": "$$"
+    },
+    {
+      "id": "2",
+      "name": "Speed Coffee",
+      "type": "cafe",
+      "location": {
+        "lat": 25.0518,
+        "lng": 121.5347
+      },
+      "address": "台北市中山區南京東路二段456號",
+      "phone": "02-2567-8901",
+      "description": "騎士專屬咖啡廳，提供停車位和充電服務",
+      "openHours": "07:00-22:00",
+      "rating": 4.2,
+      "image": "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=300",
+      "services": ["咖啡", "輕食", "充電", "停車"],
+      "priceRange": "$"
+    },
+    {
+      "id": "3",
+      "name": "中油加油站 - 忠孝站",
+      "type": "gas",
+      "location": {
+        "lat": 25.0417,
+        "lng": 121.5431
+      },
+      "address": "台北市大安區忠孝東路四段789號",
+      "phone": "02-2789-0123",
+      "description": "提供95、98無鉛汽油及柴油，24小時服務",
+      "openHours": "24小時營業",
+      "rating": 4.0,
+      "image": "https://images.unsplash.com/photo-1545558014-8692077e9b5c?w=300",
+      "services": ["95汽油", "98汽油", "柴油", "便利商店"],
+      "priceRange": "$"
+    },
+    {
+      "id": "4",
+      "name": "世貿停車場",
+      "type": "parking",
+      "location": {
+        "lat": 25.0348,
+        "lng": 121.5601
+      },
+      "address": "台北市信義區信義路五段101號",
+      "phone": "02-2345-0987",
+      "description": "機車停車每小時15元，安全監控",
+      "openHours": "06:00-24:00",
+      "rating": 3.8,
+      "image": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300",
+      "services": ["機車停車", "監控", "遮雨棚"],
+      "priceRange": "$"
+    },
+    {
+      "id": "5",
+      "name": "專業車體鈑烤",
+      "type": "repair",
+      "location": {
+        "lat": 25.0485,
+        "lng": 121.5590
+      },
+      "address": "台北市松山區八德路三段234號",
+      "phone": "02-2456-7890",
+      "description": "機車鈑金、烤漆、改裝專家",
+      "openHours": "08:00-18:00",
+      "rating": 4.7,
+      "image": "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=300",
+      "services": ["鈑金", "烤漆", "改裝", "客製化"],
+      "priceRange": "$$"
+    },
+    {
+      "id": "6",
+      "name": "Mountain View Cafe",
+      "type": "cafe",
+      "location": {
+        "lat": 25.0445,
+        "lng": 121.5445
+      },
+      "address": "台北市大安區復興南路一段567號",
+      "phone": "02-2678-9012",
+      "description": "山景咖啡廳，騎士聚會熱點",
+      "openHours": "08:00-20:00",
+      "rating": 4.3,
+      "image": "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=300",
+      "services": ["景觀", "聚會", "wifi", "戶外座位"],
+      "priceRange": "$$"
+    },
+    {
+      "id": "7",
+      "name": "台塑加油站 - 復興站",
+      "type": "gas",
+      "location": {
+        "lat": 25.0510,
+        "lng": 121.5320
+      },
+      "address": "台北市中山區復興北路123號",
+      "phone": "02-2890-1234",
+      "description": "優質汽柴油、機車用品販售",
+      "openHours": "24小時營業",
+      "rating": 4.1,
+      "image": "https://images.unsplash.com/photo-1545558014-8692077e9b5c?w=300",
+      "services": ["汽油", "柴油", "機油", "用品販售"],
+      "priceRange": "$"
+    },
+    {
+      "id": "8",
+      "name": "Biker's Restaurant",
+      "type": "restaurant",
+      "location": {
+        "lat": 25.0380,
+        "lng": 121.5680
+      },
+      "address": "台北市信義區松壽路11號",
+      "phone": "02-2345-6789",
+      "description": "騎士主題餐廳，提供停車位",
+      "openHours": "11:00-23:00",
+      "rating": 4.4,
+      "image": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=300",
+      "services": ["餐飲", "停車", "聚會", "主題裝潢"],
+      "priceRange": "$$"
+    },
+    {
+      "id": "9",
+      "name": "機車用品大賣場",
+      "type": "shop",
+      "location": {
+        "lat": 25.0460,
+        "lng": 121.5500
+      },
+      "address": "台北市松山區南京東路四段888號",
+      "phone": "02-2567-1234",
+      "description": "各式機車用品、配件、安全帽專賣",
+      "openHours": "09:00-21:00",
+      "rating": 4.2,
+      "image": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300",
+      "services": ["用品販售", "安全帽", "配件", "客製服務"],
+      "priceRange": "$$"
+    },
+    {
+      "id": "10",
+      "name": "路邊停車格",
+      "type": "parking",
+      "location": {
+        "lat": 25.0400,
+        "lng": 121.5550
+      },
+      "address": "台北市大安區仁愛路三段",
+      "phone": "",
+      "description": "路邊付費停車格，機車每小時10元",
+      "openHours": "24小時開放",
+      "rating": 3.5,
+      "image": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300",
+      "services": ["路邊停車", "計時收費"],
+      "priceRange": "$"
+    }
+  ],
+  "categories": [
+    {
+      "id": "repair",
+      "name": "維修店",
+      "icon": "🔧",
+      "color": "#ef4444"
+    },
+    {
+      "id": "cafe",
+      "name": "咖啡廳",
+      "icon": "☕",
+      "color": "#8b5cf6"
+    },
+    {
+      "id": "gas",
+      "name": "加油站",
+      "icon": "⛽",
+      "color": "#f59e0b"
+    },
+    {
+      "id": "parking",
+      "name": "停車場",
+      "icon": "🅿️",
+      "color": "#10b981"
+    },
+    {
+      "id": "restaurant",
+      "name": "餐廳",
+      "icon": "🍽️",
+      "color": "#f97316"
+    },
+    {
+      "id": "shop",
+      "name": "商店",
+      "icon": "🏪",
+      "color": "#06b6d4"
+    }
+  ]
+} 
