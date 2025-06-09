@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>騎行記錄</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+        }
+        .record-button {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            box-shadow: 0 10px 30px rgba(251, 191, 36, 0.4);
+            transform: scale(1);
+            transition: all 0.3s ease;
+        }
+        .record-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(251, 191, 36, 0.6);
+        }
+        .record-button.recording {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+        }
+        .stats-card {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.9);
+        }
+        .history-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- 頭部 -->
+    <header class="gradient-bg text-white p-4">
+        <div class="flex items-center justify-between">
+            <h1 class="text-xl font-bold">騎行記錄</h1>
+            <div class="flex items-center space-x-3">
+                <button class="bg-white/20 rounded-full p-2">
+                    <i class="fas fa-cog"></i>
+                </button>
+                <button class="bg-white/20 rounded-full p-2">
+                    <i class="fas fa-share-alt"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主要騎行控制區 -->
+    <div class="relative -mt-6 px-4">
+        <div class="bg-white rounded-2xl shadow-xl p-6 relative overflow-hidden">
+            <!-- 背景裝飾 -->
+            <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full transform translate-x-8 -translate-y-8 opacity-50"></div>
+            
+            <!-- 當前狀態 -->
+            <div class="text-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">準備開始騎行</h2>
+                <p class="text-gray-600">選擇騎行模式並點擊開始</p>
+            </div>
+
+            <!-- 騎行模式選擇 -->
+            <div class="grid grid-cols-3 gap-3 mb-6">
+                <button class="mode-btn bg-yellow-50 border-2 border-yellow-200 rounded-xl p-3 text-center transition-all duration-200 hover:bg-yellow-100">
+                    <i class="fas fa-bicycle text-yellow-600 text-xl mb-1"></i>
+                    <div class="text-xs font-medium text-gray-800">休閒騎行</div>
+                </button>
+                <button class="mode-btn bg-amber-50 border-2 border-amber-200 rounded-xl p-3 text-center transition-all duration-200 hover:bg-amber-100">
+                    <i class="fas fa-mountain text-amber-600 text-xl mb-1"></i>
+                    <div class="text-xs font-medium text-gray-800">山地騎行</div>
+                </button>
+                <button class="mode-btn bg-orange-50 border-2 border-orange-200 rounded-xl p-3 text-center transition-all duration-200 hover:bg-orange-100">
+                    <i class="fas fa-motorcycle text-orange-600 text-xl mb-1"></i>
+                    <div class="text-xs font-medium text-gray-800">重機騎行</div>
+                </button>
+            </div>
+
+            <!-- 開始/停止按鈕 -->
+            <div class="text-center mb-6">
+                <button id="recordBtn" class="record-button w-32 h-32 rounded-full text-white font-bold text-lg shadow-lg">
+                    <i class="fas fa-play text-2xl"></i>
+                    <div class="mt-2 text-sm">開始騎行</div>
+                </button>
+            </div>
+
+            <!-- 快速統計 -->
+            <div class="grid grid-cols-3 gap-4 text-center">
+                <div>
+                    <div class="text-2xl font-bold text-gray-800" id="distance">0.0</div>
+                    <div class="text-xs text-gray-500">距離(km)</div>
+                </div>
+                <div>
+                    <div class="text-2xl font-bold text-gray-800" id="duration">00:00</div>
+                    <div class="text-xs text-gray-500">時間</div>
+                </div>
+                <div>
+                    <div class="text-2xl font-bold text-gray-800" id="speed">0</div>
+                    <div class="text-xs text-gray-500">速度(km/h)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 實時數據卡片 -->
+    <div class="px-4 mt-6">
+        <div class="grid grid-cols-2 gap-4">
+            <div class="stats-card bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-yellow-100 rounded-full p-3">
+                        <i class="fas fa-fire text-yellow-600"></i>
+                    </div>
+                    <div>
+                        <div class="text-lg font-bold text-gray-800" id="calories">0</div>
+                        <div class="text-xs text-gray-500">燃燒卡路里</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="stats-card bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-amber-100 rounded-full p-3">
+                        <i class="fas fa-heartbeat text-amber-600"></i>
+                    </div>
+                    <div>
+                        <div class="text-lg font-bold text-gray-800" id="heartRate">--</div>
+                        <div class="text-xs text-gray-500">心率(bpm)</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats-card bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-orange-100 rounded-full p-3">
+                        <i class="fas fa-chart-line text-orange-600"></i>
+                    </div>
+                    <div>
+                        <div class="text-lg font-bold text-gray-800" id="elevation">0</div>
+                        <div class="text-xs text-gray-500">爬升(m)</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats-card bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-yellow-100 rounded-full p-3">
+                        <i class="fas fa-tachometer-alt text-yellow-600"></i>
+                    </div>
+                    <div>
+                        <div class="text-lg font-bold text-gray-800" id="maxSpeed">0</div>    
+                        <div class="text-xs text-gray-500">最高速度</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 本週統計 -->
+    <div class="px-4 mt-6">
+        <div class="bg-gradient-to-r from-yellow-500 to-orange-600 rounded-xl text-white p-6">
+            <h3 class="font-bold text-lg mb-4">本週統計</h3>
+            <div class="grid grid-cols-3 gap-4 text-center">
+                <div>
+                    <div class="text-2xl font-bold">125.8</div>
+                    <div class="text-sm opacity-90">總里程(km)</div>
+                </div>
+                <div>
+                    <div class="text-2xl font-bold">12.5</div>
+                    <div class="text-sm opacity-90">騎行次數</div>
+                </div>
+                <div>
+                    <div class="text-2xl font-bold">8:45</div>
+                    <div class="text-sm opacity-90">總時間(h)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 歷史記錄 -->
+    <div class="px-4 mt-6">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="font-bold text-lg text-gray-800">最近記錄</h3>
+            <button class="text-amber-600 font-medium">查看全部</button>
+        </div>
+
+        <div class="space-y-3">
+            <!-- 記錄1 -->
+            <div class="history-card bg-white rounded-xl p-4 shadow-sm border border-gray-100 transition-all duration-200">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center space-x-3">
+                        <div class="bg-yellow-100 rounded-full p-2">
+                            <i class="fas fa-bicycle text-yellow-600"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-800">河濱公園騎行</h4>
+                            <p class="text-xs text-gray-500">今天 14:30 • 休閒騎行</p>
+                        </div>
+                    </div>
+                    <button class="text-gray-400">
+                        <i class="fas fa-ellipsis-h"></i>
+                    </button>
+                </div>
+                <div class="grid grid-cols-4 gap-4 text-center text-sm">
+                    <div>
+                        <div class="font-semibold text-gray-800">12.5km</div>
+                        <div class="text-xs text-gray-500">距離</div>
+                    </div>
+                    <div>
+                        <div class="font-semibold text-gray-800">45min</div>
+                        <div class="text-xs text-gray-500">時間</div>
+                    </div>
+                    <div>
+                        <div class="font-semibold text-gray-800">285</div>
+                        <div class="text-xs text-gray-500">卡路里</div>
+                    </div>
+                    <div>
+                        <div class="font-semibold text-gray-800">18.5</div>
+                        <div class="text-xs text-gray-500">均速</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 記錄2 -->
+            <div class="history-card bg-white rounded-xl p-4 shadow-sm border border-gray-100 transition-all duration-200">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center space-x-3">
+                        <div class="bg-amber-100 rounded-full p-2">
+                            <i class="fas fa-mountain text-amber-600"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-800">陽明山挑戰</h4>
+                            <p class="text-xs text-gray-500">昨天 08:15 • 山地騎行</p>
+                        </div>
+                    </div>
+                    <button class="text-gray-400">
+                        <i class="fas fa-ellipsis-h"></i>
+                    </button>
+                </div>
+                <div class="grid grid-cols-4 gap-4 text-center text-sm">
+                    <div>
+                        <div class="font-semibold text-gray-800">25.8km</div>
+                        <div class="text-xs text-gray-500">距離</div>
+                    </div>
+                    <div>
+                        <div class="font-semibold text-gray-800">2h15m</div>
+                        <div class="text-xs text-gray-500">時間</div>
+                    </div>
+                    <div>
+                        <div class="font-semibold text-gray-800">850</div>
+                        <div class="text-xs text-gray-500">卡路里</div>
+                    </div>
+                    <div>
+                        <div class="font-semibold text-gray-800">11.5</div>
+                        <div class="text-xs text-gray-500">均速</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 記錄3 -->
+            <div class="history-card bg-white rounded-xl p-4 shadow-sm border border-gray-100 transition-all duration-200">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center space-x-3">
+                        <div class="bg-orange-100 rounded-full p-2">
+                            <i class="fas fa-motorcycle text-orange-600"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-800">北海岸環島</h4>
+                            <p class="text-xs text-gray-500">2天前 06:00 • 重機騎行</p>
+                        </div>
+                    </div>
+                    <button class="text-gray-400">
+                        <i class="fas fa-ellipsis-h"></i>
+                    </button>
+                </div>
+                <div class="grid grid-cols-4 gap-4 text-center text-sm">
+                    <div>
+                        <div class="font-semibold text-gray-800">158km</div>
+                        <div class="text-xs text-gray-500">距離</div>
+                    </div>
+                    <div>
+                        <div class="font-semibold text-gray-800">4h30m</div>
+                        <div class="text-xs text-gray-500">時間</div>
+                    </div>
+                    <div>
+                        <div class="font-semibold text-gray-800">1250</div>
+                        <div class="text-xs text-gray-500">卡路里</div>
+                    </div>
+                    <div>
+                        <div class="font-semibold text-gray-800">35.1</div>
+                        <div class="text-xs text-gray-500">均速</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部空間 -->
+    <div class="h-20"></div>
+
+    <script>
+        let isRecording = false;
+        let startTime = null;
+        let recordInterval = null;
+        
+        // 記錄按鈕事件
+        document.getElementById('recordBtn').addEventListener('click', function() {
+            if (!isRecording) {
+                startRecording();
+            } else {
+                stopRecording();
+            }
+        });
+
+        // 模式選擇
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.mode-btn').forEach(b => {
+                    b.classList.remove('ring-2', 'ring-blue-500');
+                });
+                this.classList.add('ring-2', 'ring-blue-500');
+            });
+        });
+
+        function startRecording() {
+            isRecording = true;
+            startTime = new Date();
+            
+            const btn = document.getElementById('recordBtn');
+            btn.classList.add('recording');
+            btn.innerHTML = '<i class="fas fa-stop text-2xl"></i><div class="mt-2 text-sm">停止騎行</div>';
+            
+            // 開始更新數據
+            recordInterval = setInterval(updateStats, 1000);
+        }
+
+        function stopRecording() {
+            isRecording = false;
+            
+            const btn = document.getElementById('recordBtn');
+            btn.classList.remove('recording');
+            btn.innerHTML = '<i class="fas fa-play text-2xl"></i><div class="mt-2 text-sm">開始騎行</div>';
+            
+            clearInterval(recordInterval);
+            
+            // 顯示騎行總結（這裡可以彈出總結彈窗）
+            alert('騎行已結束！數據已保存。');
+        }
+
+        function updateStats() {
+            if (!isRecording) return;
+            
+            const now = new Date();
+            const duration = Math.floor((now - startTime) / 1000);
+            
+            // 模擬更新各種數據
+            const minutes = Math.floor(duration / 60);
+            const seconds = duration % 60;
+            document.getElementById('duration').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            // 模擬其他數據變化
+            if (duration > 0) {
+                const simulatedDistance = (duration * 0.005).toFixed(1); // 約18km/h速度
+                const simulatedSpeed = (15 + Math.random() * 10).toFixed(0);
+                const simulatedCalories = Math.floor(duration * 0.15);
+                const simulatedHeartRate = 120 + Math.floor(Math.random() * 40);
+                
+                document.getElementById('distance').textContent = simulatedDistance;
+                document.getElementById('speed').textContent = simulatedSpeed;
+                document.getElementById('calories').textContent = simulatedCalories;
+                document.getElementById('heartRate').textContent = simulatedHeartRate;
+            }
+        }
+    </script>
+</body>
+</html> 

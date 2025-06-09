@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>騎騎 - 騎行社交平台</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* 預設亮色主題 */
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9fafb;
+            --bg-tertiary: #f3f4f6;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --text-tertiary: #9ca3af;
+            --border-color: #e5e7eb;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --amber-50: #fffbeb;
+            --amber-100: #fef3c7;
+            --amber-500: #f59e0b;
+            --amber-600: #d97706;
+        }
+
+        /* 深色主題 */
+        [data-theme="dark"] {
+            --bg-primary: #1f2937;
+            --bg-secondary: #111827;
+            --bg-tertiary: #374151;
+            --text-primary: #f9fafb;
+            --text-secondary: #d1d5db;
+            --text-tertiary: #9ca3af;
+            --border-color: #4b5563;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4);
+            --amber-50: #451a03;
+            --amber-100: #78350f;
+            --amber-500: #f59e0b;
+            --amber-600: #d97706;
+        }
+
+        body {
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .main-container {
+            background-color: var(--bg-primary);
+            box-shadow: var(--shadow-md);
+        }
+
+        .status-bar {
+            background: linear-gradient(135deg, rgba(0,0,0,0.8), rgba(0,0,0,0.6));
+            backdrop-filter: blur(10px);
+            color: white;
+        }
+
+        [data-theme="dark"] .status-bar {
+            background: linear-gradient(135deg, rgba(0,0,0,0.9), rgba(0,0,0,0.7));
+        }
+
+        .nav-item {
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
+        }
+
+        .nav-item.active {
+            color: var(--amber-600);
+        }
+
+        .nav-item:hover {
+            color: var(--amber-500);
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 50px;
+            right: 16px;
+            z-index: 1000;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            background: var(--bg-tertiary);
+            transform: scale(1.05);
+        }
+
+        /* iframe 樣式調整 */
+        iframe {
+            background-color: var(--bg-secondary);
+            transition: opacity 0.3s ease;
+        }
+
+        /* 底部導航樣式 */
+        .bottom-nav {
+            background-color: var(--bg-primary);
+            border-top: 1px solid var(--border-color);
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+
+        [data-theme="dark"] .bottom-nav {
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+        }
+
+        /* 導航按鈕動畫 */
+        .nav-btn {
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-btn:active {
+            transform: scale(0.95);
+        }
+
+        .nav-btn.active::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 3px;
+            background: var(--amber-600);
+            border-radius: 0 0 3px 3px;
+        }
+
+        /* Loading 狀態 */
+        .loading {
+            opacity: 0.7;
+        }
+
+        .nav-btn.loading {
+            pointer-events: none;
+        }
+
+        .nav-btn.loading i {
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+    <div class="max-w-md mx-auto main-container h-screen flex flex-col relative">
+        <!-- 手機狀態欄 -->
+        <div class="status-bar h-11 flex items-center justify-between px-4 text-sm font-medium">
+            <div class="flex items-center space-x-1">
+                <span>9:41</span>
+            </div>
+            <div class="flex items-center space-x-1">
+                <i class="fas fa-signal text-xs"></i>
+                <i class="fas fa-wifi text-xs"></i>
+                <span class="text-xs">87%</span>
+                <i class="fas fa-battery-three-quarters text-xs"></i>
+            </div>
+        </div>
+
+        <!-- 主題切換按鈕 -->
+        <button id="themeToggle" class="theme-toggle w-10 h-10 rounded-full flex items-center justify-center">
+            <i class="fas fa-moon text-lg"></i>
+        </button>
+
+        <!-- iframe 容器 -->
+        <div class="flex-1 relative">
+            <iframe id="contentFrame" 
+                    src="home.html" 
+                    class="w-full h-full border-0 absolute top-0 left-0">
+            </iframe>
+        </div>
+
+        <!-- 底部導航 -->
+        <div class="bottom-nav h-20 flex items-center justify-around px-4">
+            <button class="nav-item nav-btn flex flex-col items-center space-y-1 p-2 active" data-page="home" data-title="首頁">
+                <i class="fas fa-home text-xl"></i>
+                <span class="text-xs">首頁</span>
+            </button>
+            <button class="nav-item nav-btn flex flex-col items-center space-y-1 p-2" data-page="explore" data-title="探索">
+                <i class="fas fa-map text-xl"></i>
+                <span class="text-xs">探索</span>
+            </button>
+            <button class="nav-item nav-btn flex flex-col items-center space-y-1 p-2" data-page="record" data-title="記錄">
+                <i class="fas fa-plus-circle text-2xl text-amber-600"></i>
+                <span class="text-xs">記錄</span>
+            </button>
+            <button class="nav-item nav-btn flex flex-col items-center space-y-1 p-2" data-page="community" data-title="社群">
+                <i class="fas fa-users text-xl"></i>
+                <span class="text-xs">社群</span>
+            </button>
+            <button class="nav-item nav-btn flex flex-col items-center space-y-1 p-2" data-page="profile" data-title="我的">
+                <i class="fas fa-user text-xl"></i>
+                <span class="text-xs">我的</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // 頁面導航
+        const navButtons = document.querySelectorAll('.nav-btn');
+        const contentFrame = document.getElementById('contentFrame');
+        let isLoading = false;
+        
+        // 存儲當前頁面，避免重複載入
+        let currentPage = 'home';
+        
+        navButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const page = button.getAttribute('data-page');
+                const title = button.getAttribute('data-title');
+                
+                // 避免重複載入同一頁面
+                if (page === currentPage || isLoading) {
+                    return;
+                }
+                
+                // 設置loading狀態
+                isLoading = true;
+                contentFrame.classList.add('loading');
+                button.classList.add('loading');
+                
+                // 更新頁面
+                contentFrame.src = `${page}.html`;
+                currentPage = page;
+                
+                // 更新active狀態
+                navButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                
+                // 可選：更新標題（如果需要）
+                document.title = `騎騎 - ${title}`;
+                
+                console.log(`🚀 導航到 ${title} 頁面`);
+            });
+        });
+        
+        // iframe載入完成後移除loading狀態
+        contentFrame.addEventListener('load', () => {
+            isLoading = false;
+            contentFrame.classList.remove('loading');
+            navButtons.forEach(btn => btn.classList.remove('loading'));
+            
+            // 應用主題到新載入的頁面
+            setTimeout(() => {
+                applyThemeToIframe(currentTheme);
+            }, 100);
+            
+            console.log(`✅ 頁面載入完成: ${currentPage}`);
+        });
+        
+        // 錯誤處理
+        contentFrame.addEventListener('error', () => {
+            isLoading = false;
+            contentFrame.classList.remove('loading');
+            navButtons.forEach(btn => btn.classList.remove('loading'));
+            console.error(`❌ 頁面載入失敗: ${currentPage}`);
+        });
+
+        // 主題切換功能
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = themeToggle.querySelector('i');
+        
+        // 從localStorage獲取保存的主題，預設為light
+        let currentTheme = localStorage.getItem('theme') || 'light';
+        
+        // 應用主題到當前頁面
+        function applyThemeToParent(theme) {
+            if (theme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                themeIcon.className = 'fas fa-sun text-lg';
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+                themeIcon.className = 'fas fa-moon text-lg';
+            }
+        }
+        
+        // 應用主題到iframe內容
+        function applyThemeToIframe(theme) {
+            try {
+                const iframe = document.getElementById('contentFrame');
+                if (iframe.contentDocument && iframe.contentDocument.documentElement) {
+                    if (theme === 'dark') {
+                        iframe.contentDocument.documentElement.setAttribute('data-theme', 'dark');
+                    } else {
+                        iframe.contentDocument.documentElement.removeAttribute('data-theme');
+                    }
+                }
+            } catch(e) {
+                // 跨域限制或iframe未載入完成時，稍後重試
+                setTimeout(() => applyThemeToIframe(theme), 100);
+            }
+        }
+        
+        // 應用主題到所有地方
+        function applyTheme(theme) {
+            applyThemeToParent(theme);
+            applyThemeToIframe(theme);
+        }
+        
+        // 初始化主題
+        applyTheme(currentTheme);
+        
+        // 主題切換事件
+        themeToggle.addEventListener('click', () => {
+            currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+            applyTheme(currentTheme);
+            localStorage.setItem('theme', currentTheme);
+            console.log(`🌙 主題切換為: ${currentTheme}`);
+        });
+
+        // 每秒檢查一次iframe主題同步（確保主題一致性）
+        setInterval(() => {
+            applyThemeToIframe(currentTheme);
+        }, 1000);
+        
+        // 初始化時打印當前狀態
+        console.log('🚴‍♂️ 騎騎App已啟動，當前頁面:', currentPage);
+    </script>
+</body>
+</html> 

@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>首頁</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* 夜間模式支持 */
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9fafb;
+            --bg-tertiary: #f3f4f6;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --text-tertiary: #9ca3af;
+            --border-color: #e5e7eb;
+            --card-bg: #ffffff;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            /* 按鈕特定顏色 */
+            --btn-yellow-bg: #fef3c7;
+            --btn-yellow-border: #fcd34d;
+            --btn-amber-bg: #fef3c7;
+            --btn-amber-border: #fcd34d;
+            --btn-orange-bg: #fed7aa;
+            --btn-orange-border: #fdba74;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #1f2937;
+            --bg-secondary: #111827;
+            --bg-tertiary: #374151;
+            --text-primary: #f9fafb;
+            --text-secondary: #d1d5db;
+            --text-tertiary: #9ca3af;
+            --border-color: #4b5563;
+            --card-bg: #374151;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4);
+            /* 夜間模式按鈕顏色 */
+            --btn-yellow-bg: #451a03;
+            --btn-yellow-border: #f59e0b;
+            --btn-amber-bg: #451a03;
+            --btn-amber-border: #f59e0b;
+            --btn-orange-bg: #431407;
+            --btn-orange-border: #ea580c;
+        }
+
+        body {
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        .card-bg {
+            background-color: var(--card-bg);
+            border-color: var(--border-color);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .text-primary { color: var(--text-primary); }
+        .text-secondary { color: var(--text-secondary); }
+        .text-tertiary { color: var(--text-tertiary); }
+
+        /* 按鈕樣式 */
+        .btn-yellow {
+            background-color: var(--btn-yellow-bg);
+            border-color: var(--btn-yellow-border);
+            transition: all 0.3s ease;
+        }
+        .btn-amber {
+            background-color: var(--btn-amber-bg);
+            border-color: var(--btn-amber-border);
+            transition: all 0.3s ease;
+        }
+        .btn-orange {
+            background-color: var(--btn-orange-bg);
+            border-color: var(--btn-orange-border);
+            transition: all 0.3s ease;
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        .story-avatar {
+            border: 3px solid #f59e0b;
+        }
+
+        /* 排行榜特殊背景 */
+        .leaderboard-top {
+            background: linear-gradient(45deg, #fef3c7, #fde68a);
+        }
+        [data-theme="dark"] .leaderboard-top {
+            background: linear-gradient(45deg, #451a03, #78350f);
+        }
+        .leaderboard-user {
+            background: linear-gradient(45deg, #fef3c7, #fde68a);
+        }
+        [data-theme="dark"] .leaderboard-user {
+            background: linear-gradient(45deg, #451a03, #78350f);
+        }
+    </style>
+</head>
+<body class="overflow-x-hidden">
+    <!-- 頭部狀態欄 -->
+    <header class="gradient-bg text-white p-4">
+        <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center space-x-3">
+                <img src="https://via.placeholder.com/50x50/f59e0b/ffffff?text=U" alt="用戶頭像" class="w-12 h-12 rounded-full border-2 border-white">
+                <div>
+                    <h2 class="font-semibold text-lg">早安，小明！</h2>
+                    <p class="text-sm opacity-90">今天是騎行的好日子</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-3">
+                <button class="relative">
+                    <i class="fas fa-bell text-xl"></i>
+                    <span class="absolute -top-2 -right-2 bg-red-500 text-xs rounded-full w-5 h-5 flex items-center justify-center">3</span>
+                </button>
+                <button>
+                    <i class="fas fa-cog text-xl"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- 今日統計 -->
+        <div class="bg-white/20 backdrop-blur-sm rounded-xl p-4">
+            <div class="grid grid-cols-3 gap-4 text-center">
+                <div>
+                    <div class="text-2xl font-bold">12.5</div>
+                    <div class="text-xs opacity-90">今日里程(km)</div>
+                </div>
+                <div>
+                    <div class="text-2xl font-bold">45</div>
+                    <div class="text-xs opacity-90">騎行時間(分)</div>
+                </div>
+                <div>
+                    <div class="text-2xl font-bold">285</div>
+                    <div class="text-xs opacity-90">燃燒卡路里</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 快速功能入口 -->
+    <div class="p-4 -mt-4 relative z-10">
+        <div class="card-bg rounded-xl shadow-lg p-6">
+            <h3 class="font-semibold text-primary mb-4">快速開始</h3>
+            <div class="grid grid-cols-2 gap-4">
+                <button class="card-hover btn-yellow border rounded-xl p-4 text-center transition-all duration-200">
+                    <i class="fas fa-route text-yellow-600 text-2xl mb-2"></i>
+                    <div class="text-sm font-medium text-primary">開始騎行</div>
+                </button>
+                <button class="card-hover btn-amber border rounded-xl p-4 text-center transition-all duration-200">
+                    <i class="fas fa-map-marked-alt text-amber-600 text-2xl mb-2"></i>
+                    <div class="text-sm font-medium text-primary">探索路線</div>
+                </button>
+                <button class="card-hover btn-orange border rounded-xl p-4 text-center transition-all duration-200">
+                    <i class="fas fa-users text-orange-600 text-2xl mb-2"></i>
+                    <div class="text-sm font-medium text-primary">找騎友</div>
+                </button>
+                <button class="card-hover btn-yellow border rounded-xl p-4 text-center transition-all duration-200">
+                    <i class="fas fa-calendar-plus text-yellow-700 text-2xl mb-2"></i>
+                    <div class="text-sm font-medium text-primary">創建活動</div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 本月挑戰 -->
+    <div class="px-4 mb-4">
+        <div class="bg-gradient-to-r from-amber-500 to-orange-600 rounded-xl text-white p-6 relative overflow-hidden">
+            <!-- 背景裝飾 -->
+            <div class="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full transform translate-x-8 -translate-y-8"></div>
+            <div class="absolute bottom-0 left-0 w-16 h-16 bg-white/5 rounded-full transform -translate-x-4 translate-y-4"></div>
+            
+            <div class="relative z-10">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="font-bold text-lg mb-1">🏆 12月挑戰：綠色騎行月</h3>
+                        <p class="text-sm opacity-90">用騎行代替開車，為地球減碳</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold">15</div>
+                        <div class="text-xs opacity-90">天剩餘</div>
+                    </div>
+                </div>
+                
+                <!-- 挑戰進度 -->
+                <div class="bg-white/20 backdrop-blur-sm rounded-xl p-4 mb-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm font-medium">個人進度</span>
+                        <span class="text-sm font-bold">68/100公里</span>
+                    </div>
+                    <div class="w-full bg-white/30 rounded-full h-3">
+                        <div class="bg-white h-3 rounded-full flex items-center px-2" style="width: 68%">
+                            <span class="text-xs font-bold text-amber-600 ml-auto">68%</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between mt-2 text-xs opacity-90">
+                        <span>🎯 目標：100公里</span>
+                        <span>🏅 還需：32公里</span>
+                    </div>
+                </div>
+                
+                <!-- 參與統計 -->
+                <div class="grid grid-cols-3 gap-4 mb-4">
+                    <div class="text-center">
+                        <div class="text-xl font-bold">2,847</div>
+                        <div class="text-xs opacity-90">參與騎友</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-xl font-bold">158k</div>
+                        <div class="text-xs opacity-90">總里程(km)</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-xl font-bold">47.2t</div>
+                        <div class="text-xs opacity-90">減碳量(CO₂)</div>
+                    </div>
+                </div>
+                
+                <!-- 獎勵預覽 -->
+                <div class="bg-white/10 rounded-lg p-3 mb-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="flex space-x-1">
+                            <div class="w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center">
+                                <i class="fas fa-trophy text-yellow-800 text-sm"></i>
+                            </div>
+                            <div class="w-8 h-8 bg-green-400 rounded-full flex items-center justify-center">
+                                <i class="fas fa-leaf text-green-800 text-sm"></i>
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <div class="text-sm font-medium">完成獎勵</div>
+                            <div class="text-xs opacity-90">環保徽章 + 專屬頭像框 + 50積分</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 行動按鈕 -->
+                <div class="flex space-x-3">
+                    <button class="flex-1 bg-white text-amber-600 px-4 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors">
+                        <i class="fas fa-play mr-2"></i>
+                        開始騎行
+                    </button>
+                    <button class="bg-white/20 text-white px-4 py-3 rounded-lg font-medium hover:bg-white/30 transition-colors">
+                        <i class="fas fa-trophy mr-2"></i>
+                        排行榜
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 挑戰排行榜預覽 -->
+    <div class="px-4 mb-4">
+        <div class="card-bg rounded-xl shadow-sm border p-4">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="font-semibold text-primary">挑戰排行榜</h3>
+                <button class="text-amber-600 font-medium text-sm">查看完整</button>
+            </div>
+            
+            <div class="space-y-2">
+                <!-- 排行榜項目 -->
+                <div class="flex items-center space-x-3 p-2 leaderboard-top rounded-lg border border-yellow-300">
+                    <div class="w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center">
+                        <span class="text-white text-xs font-bold">1</span>
+                    </div>
+                    <img src="https://via.placeholder.com/32x32/f59e0b/ffffff?text=A" class="w-8 h-8 rounded-full">
+                    <div class="flex-1">
+                        <div class="font-medium text-primary">阿強</div>
+                        <div class="text-xs text-secondary">完成度 100%</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="font-bold text-yellow-600">150km</div>
+                        <div class="text-xs text-tertiary">已完成</div>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-3 p-2">
+                    <div class="w-6 h-6 bg-gray-400 rounded-full flex items-center justify-center">
+                        <span class="text-white text-xs font-bold">2</span>
+                    </div>
+                    <img src="https://via.placeholder.com/32x32/d97706/ffffff?text=M" class="w-8 h-8 rounded-full">
+                    <div class="flex-1">
+                        <div class="font-medium text-primary">小美</div>
+                        <div class="text-xs text-secondary">完成度 95%</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="font-bold text-secondary">95km</div>
+                        <div class="text-xs text-tertiary">進行中</div>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-3 p-2 leaderboard-user rounded-lg border border-amber-300">
+                    <div class="w-6 h-6 bg-amber-500 rounded-full flex items-center justify-center">
+                        <span class="text-white text-xs font-bold">8</span>
+                    </div>
+                    <img src="https://via.placeholder.com/32x32/fbbf24/ffffff?text=Y" class="w-8 h-8 rounded-full">
+                    <div class="flex-1">
+                        <div class="font-medium text-primary">你</div>
+                        <div class="text-xs text-secondary">完成度 68%</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="font-bold text-amber-600">68km</div>
+                        <div class="text-xs text-amber-600">加油！</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 騎友動態故事 -->
+    <div class="px-4 mb-4">
+        <h3 class="font-semibold text-primary mb-3">騎友動態</h3>
+        <div class="flex space-x-4 overflow-x-auto pb-2">
+            <div class="flex-shrink-0 text-center">
+                <div class="story-avatar w-16 h-16 rounded-full overflow-hidden mb-2">
+                    <img src="https://via.placeholder.com/64x64/22c55e/ffffff?text=+" alt="添加故事" class="w-full h-full object-cover">
+                </div>
+                <p class="text-xs text-secondary">你的故事</p>
+            </div>
+            <div class="flex-shrink-0 text-center">
+                <div class="story-avatar w-16 h-16 rounded-full overflow-hidden mb-2">
+                    <img src="https://via.placeholder.com/64x64/f59e0b/ffffff?text=A" alt="騎友" class="w-full h-full object-cover">
+                </div>
+                <p class="text-xs text-secondary">阿強</p>
+            </div>
+            <div class="flex-shrink-0 text-center">
+                <div class="story-avatar w-16 h-16 rounded-full overflow-hidden mb-2">
+                    <img src="https://via.placeholder.com/64x64/d97706/ffffff?text=B" alt="騎友" class="w-full h-full object-cover">
+                </div>
+                <p class="text-xs text-secondary">小美</p>
+            </div>
+            <div class="flex-shrink-0 text-center">
+                <div class="story-avatar w-16 h-16 rounded-full overflow-hidden mb-2">
+                    <img src="https://via.placeholder.com/64x64/fbbf24/ffffff?text=C" alt="騎友" class="w-full h-full object-cover">
+                </div>
+                <p class="text-xs text-secondary">阿華</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 動態 Feed -->
+    <div class="px-4 space-y-4">
+        <!-- 動態1 -->
+        <div class="card-bg rounded-xl shadow-sm border overflow-hidden">
+            <div class="p-4">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center space-x-3">
+                        <img src="https://via.placeholder.com/40x40/f59e0b/ffffff?text=A" alt="用戶" class="w-10 h-10 rounded-full">
+                        <div>
+                            <h4 class="font-medium text-primary">阿強</h4>
+                            <p class="text-xs text-tertiary">2小時前 • 陽明山</p>
+                        </div>
+                    </div>
+                    <button>
+                        <i class="fas fa-ellipsis-h text-tertiary"></i>
+                    </button>
+                </div>
+                <p class="text-secondary mb-3">今天挑戰陽明山，風景太美了！推薦給愛爬坡的朋友們 🚴‍♂️</p>
+                <div class="rounded-lg h-48 mb-3 flex items-center justify-center" style="background-color: var(--bg-tertiary);">
+                    <i class="fas fa-image text-tertiary text-3xl"></i>
+                </div>
+                <div class="flex items-center justify-between text-sm text-tertiary">
+                    <div class="flex space-x-4">
+                        <button class="flex items-center space-x-1 hover:text-red-500">
+                            <i class="far fa-heart"></i>
+                            <span>32</span>
+                        </button>
+                        <button class="flex items-center space-x-1 hover:text-amber-500">
+                            <i class="far fa-comment"></i>
+                            <span>8</span>
+                        </button>
+                        <button class="flex items-center space-x-1 hover:text-yellow-500">
+                            <i class="fas fa-share"></i>
+                            <span>5</span>
+                        </button>
+                    </div>
+                    <div class="flex items-center space-x-1 text-xs">
+                        <i class="fas fa-route"></i>
+                        <span>15.2km</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 動態2 -->
+        <div class="card-bg rounded-xl shadow-sm border overflow-hidden">
+            <div class="p-4">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center space-x-3">
+                        <img src="https://via.placeholder.com/40x40/d97706/ffffff?text=M" alt="用戶" class="w-10 h-10 rounded-full">
+                        <div>
+                            <h4 class="font-medium text-primary">小美</h4>
+                            <p class="text-xs text-tertiary">4小時前 • 河濱公園</p>
+                        </div>
+                    </div>
+                    <button>
+                        <i class="fas fa-ellipsis-h text-tertiary"></i>
+                    </button>
+                </div>
+                <p class="text-secondary mb-3">週末河濱騎行團，歡迎新手加入！下週日早上8點集合 🚲</p>
+                <div class="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-lg p-4 text-white mb-3">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h5 class="font-semibold">河濱休閒騎行</h5>
+                            <p class="text-sm opacity-90">12/10 (日) 8:00 AM</p>
+                        </div>
+                        <i class="fas fa-bicycle text-2xl opacity-75"></i>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between text-sm text-tertiary">
+                    <div class="flex space-x-4">
+                        <button class="flex items-center space-x-1 hover:text-red-500">
+                            <i class="fas fa-heart text-red-500"></i>
+                            <span>18</span>
+                        </button>
+                        <button class="flex items-center space-x-1 hover:text-amber-500">
+                            <i class="far fa-comment"></i>
+                            <span>12</span>
+                        </button>
+                        <button class="flex items-center space-x-1 hover:text-yellow-500">
+                            <i class="fas fa-share"></i>
+                            <span>3</span>
+                        </button>
+                    </div>
+                    <button class="text-amber-600 font-medium">參加活動</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 推薦路線卡片 -->
+        <div class="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl text-white p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="font-bold text-lg mb-1">為你推薦</h3>
+                    <p class="text-sm opacity-90">基於你的騎行偏好</p>
+                </div>
+                <i class="fas fa-map-marked-alt text-3xl opacity-75"></i>
+            </div>
+            <div class="mt-4">
+                <div class="flex items-center space-x-2 text-sm opacity-90">
+                    <i class="fas fa-route"></i>
+                    <span>淡水河岸線 • 適合新手 • 18.5km</span>
+                </div>
+                <button class="mt-3 bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-lg font-medium hover:bg-white/30 transition-colors border border-white/30">
+                    查看路線
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部空間 -->
+    <div class="h-20"></div>
+</body>
+</html> 

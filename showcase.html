@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>騎騎 App - 原型展示</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .phone-frame {
+            width: 375px;
+            height: 812px;
+            background: #1a1a1a;
+            border-radius: 25px;
+            padding: 8px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background: white;
+            border-radius: 18px;
+            overflow: hidden;
+            position: relative;
+        }
+        .status-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 44px;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            font-size: 14px;
+            font-weight: 600;
+            color: white;
+        }
+        .phone-content {
+            position: absolute;
+            top: 44px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            transform: scale(1);
+            transform-origin: top left;
+            height: calc(100% - 44px);
+        }
+        .showcase-container {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+            padding: 40px 20px;
+        }
+        .page-title {
+            color: white;
+            text-align: center;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        .page-description {
+            color: rgba(255,255,255,0.8);
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="showcase-container">
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-white mb-4">騎騎 App</h1>
+            <p class="text-xl text-white/80 mb-2">高保真原型展示</p>
+            <p class="text-white/60">專為重機和腳踏車愛好者設計的社交平台</p>
+        </div>
+        
+        <div class="flex flex-wrap justify-center gap-8 max-w-7xl mx-auto">
+            <!-- 首頁 -->
+            <div class="flex flex-col items-center">
+                <h3 class="page-title">首頁</h3>
+                <p class="page-description">動態feed • 快速功能</p>
+                <div class="phone-frame">
+                    <div class="phone-screen">
+                        <div class="status-bar">
+                            <span>9:41</span>
+                            <span>●●●●●</span>
+                            <span>100%</span>
+                        </div>
+                        <iframe src="home.html" class="phone-content" style="border: none; width: 100%;"></iframe>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 探索頁面 -->
+            <div class="flex flex-col items-center">
+                <h3 class="page-title">探索</h3>
+                <p class="page-description">地圖 • 路線 • 騎友</p>
+                <div class="phone-frame">
+                    <div class="phone-screen">
+                        <div class="status-bar">
+                            <span>9:41</span>
+                            <span>●●●●●</span>
+                            <span>100%</span>
+                        </div>
+                        <iframe src="explore.html" class="phone-content" style="border: none; width: 100%;"></iframe>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 騎行記錄 -->
+            <div class="flex flex-col items-center">
+                <h3 class="page-title">騎行記錄</h3>
+                <p class="page-description">即時追蹤 • 歷史數據</p>
+                <div class="phone-frame">
+                    <div class="phone-screen">
+                        <div class="status-bar">
+                            <span>9:41</span>
+                            <span>●●●●●</span>
+                            <span>100%</span>
+                        </div>
+                        <iframe src="record.html" class="phone-content" style="border: none; width: 100%;"></iframe>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 社群功能 -->
+            <div class="flex flex-col items-center">
+                <h3 class="page-title">社群</h3>
+                <p class="page-description">群組 • 活動 • 排行榜</p>
+                <div class="phone-frame">
+                    <div class="phone-screen">
+                        <div class="status-bar">
+                            <span>9:41</span>
+                            <span>●●●●●</span>
+                            <span>100%</span>
+                        </div>
+                        <iframe src="community.html" class="phone-content" style="border: none; width: 100%;"></iframe>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 個人資料 -->
+            <div class="flex flex-col items-center">
+                <h3 class="page-title">個人資料</h3>
+                <p class="page-description">統計 • 成就 • 設定</p>
+                <div class="phone-frame">
+                    <div class="phone-screen">
+                        <div class="status-bar">
+                            <span>9:41</span>
+                            <span>●●●●●</span>
+                            <span>100%</span>
+                        </div>
+                        <iframe src="profile.html" class="phone-content" style="border: none; width: 100%;"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 功能特色說明 -->
+        <div class="mt-16 max-w-4xl mx-auto">
+            <h2 class="text-3xl font-bold text-white text-center mb-8">核心功能特色</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6 text-white">
+                    <div class="bg-yellow-500 rounded-full w-12 h-12 flex items-center justify-center mb-4">
+                        <i class="fas fa-home text-xl"></i>
+                    </div>
+                    <h3 class="font-bold mb-2">智能首頁</h3>
+                    <p class="text-sm opacity-90">個人化動態feed，快速功能入口，騎友故事分享</p>
+                </div>
+                
+                <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6 text-white">
+                    <div class="bg-orange-500 rounded-full w-12 h-12 flex items-center justify-center mb-4">
+                        <i class="fas fa-compass text-xl"></i>
+                    </div>
+                    <h3 class="font-bold mb-2">路線探索</h3>
+                    <p class="text-sm opacity-90">互動地圖顯示，路線篩選推薦，附近騎友發現</p>
+                </div>
+                
+                <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6 text-white">
+                    <div class="bg-amber-500 rounded-full w-12 h-12 flex items-center justify-center mb-4">
+                        <i class="fas fa-play-circle text-xl"></i>
+                    </div>
+                    <h3 class="font-bold mb-2">騎行追蹤</h3>
+                    <p class="text-sm opacity-90">即時數據記錄，多種騎行模式，歷史統計分析</p>
+                </div>
+                
+                <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6 text-white">
+                    <div class="bg-yellow-600 rounded-full w-12 h-12 flex items-center justify-center mb-4">
+                        <i class="fas fa-users text-xl"></i>
+                    </div>
+                    <h3 class="font-bold mb-2">社群互動</h3>
+                    <p class="text-sm opacity-90">群組聊天功能，活動組織參與，排行榜競賽</p>
+                </div>
+                
+                <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6 text-white">
+                    <div class="bg-orange-600 rounded-full w-12 h-12 flex items-center justify-center mb-4">
+                        <i class="fas fa-user text-xl"></i>
+                    </div>
+                    <h3 class="font-bold mb-2">個人中心</h3>
+                    <p class="text-sm opacity-90">詳細數據統計，成就徽章系統，個性化設定</p>
+                </div>
+                
+                <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6 text-white">
+                    <div class="bg-amber-600 rounded-full w-12 h-12 flex items-center justify-center mb-4">
+                        <i class="fas fa-mobile-alt text-xl"></i>
+                    </div>
+                    <h3 class="font-bold mb-2">現代化設計</h3>
+                    <p class="text-sm opacity-90">響應式界面，流暢動效，直觀用戶體驗</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 技術特點 -->
+        <div class="mt-16 text-center">
+            <h2 class="text-3xl font-bold text-white mb-8">技術實現</h2>
+            <div class="flex flex-wrap justify-center gap-4 mb-8">
+                <span class="bg-white/20 text-white px-4 py-2 rounded-full text-sm">HTML5</span>
+                <span class="bg-white/20 text-white px-4 py-2 rounded-full text-sm">Tailwind CSS</span>
+                <span class="bg-white/20 text-white px-4 py-2 rounded-full text-sm">Vanilla JavaScript</span>
+                <span class="bg-white/20 text-white px-4 py-2 rounded-full text-sm">Font Awesome</span>
+                <span class="bg-white/20 text-white px-4 py-2 rounded-full text-sm">響應式設計</span>
+                <span class="bg-white/20 text-white px-4 py-2 rounded-full text-sm">現代化UI</span>
+            </div>
+            <p class="text-white/80 max-w-2xl mx-auto">
+                使用現代前端技術打造的高保真原型，完整展示了騎車社交應用的用戶體驗流程。
+                所有界面都可以直接用於開發參考，具備完整的交互功能和視覺效果。
+            </p>
+        </div>
+
+        <!-- 底部信息 -->
+        <div class="mt-16 text-center">
+            <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6 max-w-2xl mx-auto">
+                <h3 class="text-white font-bold mb-2">📱 使用說明</h3>
+                <p class="text-white/80 text-sm mb-4">
+                    點擊各個手機框架內的界面可以進行交互體驗。建議在桌面端瀏覽以獲得最佳展示效果。
+                </p>
+                <div class="flex justify-center space-x-4">
+                    <a href="index.html" class="bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors">
+                        <i class="fas fa-mobile-alt mr-2"></i>
+                        體驗完整版
+                    </a>
+                    <a href="README.md" class="bg-white/20 hover:bg-white/30 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors">
+                        <i class="fas fa-book mr-2"></i>
+                        查看文檔
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-8 text-center text-white/60 text-sm">
+            <p>© 2023 騎騎 App - 高保真原型展示</p>
+        </div>
+    </div>
+
+    <script>
+        // 添加一些交互效果
+        document.querySelectorAll('.phone-frame').forEach(frame => {
+            frame.addEventListener('mouseenter', function() {
+                this.style.transform = 'scale(1.02)';
+                this.style.transition = 'transform 0.3s ease';
+            });
+            
+            frame.addEventListener('mouseleave', function() {
+                this.style.transform = 'scale(1)';
+            });
+        });
+
+        // 平滑滾動
+        document.addEventListener('DOMContentLoaded', function() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            });
+
+            document.querySelectorAll('.phone-frame').forEach(frame => {
+                frame.style.opacity = '0';
+                frame.style.transform = 'translateY(20px)';
+                frame.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                observer.observe(frame);
+            });
+        });
+    </script>
+</body>
+</html> 
