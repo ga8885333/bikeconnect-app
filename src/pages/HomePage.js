@@ -1,306 +1,481 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import React, { useState } from 'react';
 import { 
-  Bell, 
-  Search, 
   MapPin, 
-  Clock, 
   Users, 
-  Heart, 
-  MessageCircle, 
-  Share2,
-  Camera,
-  Navigation,
-  Zap,
-  Info
+  Calendar,
+  Trophy,
+  TrendingUp,
+  Plus,
+  ArrowRight,
+  Clock
 } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 
 const HomePage = () => {
-  const { user } = useAuth();
-  const [posts, setPosts] = useState([]);
-  const [nearbyRiders, setNearbyRiders] = useState([]);
+  const [todayStats] = useState({
+    distance: 12.5,
+    time: 45,
+    calories: 285
+  });
 
-  useEffect(() => {
-    // 模擬獲取動態數據
-    const mockPosts = [
-      {
-        id: '1',
-        user: {
-          name: '風速騎士',
-          avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
-          verified: true
-        },
-        content: '今天騎了淡水河堤，風景超美的！',
-        image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400',
-        location: '淡水河濱公園',
-        timestamp: '2小時前',
-        likes: 24,
-        comments: 8,
-        distance: '35.2km'
-      },
-      {
-        id: '2',
-        user: {
-          name: '山路探險家',
-          avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
-          verified: false
-        },
-        content: '陽明山夜騎真的太爽了！誰要一起？',
-        location: '陽明山國家公園',
-        timestamp: '4小時前',
-        likes: 67,
-        comments: 12,
-        distance: '28.7km'
-      }
-    ];
+  const [weeklyProgress] = useState({
+    current: 68,
+    goal: 100,
+    streakDays: 5
+  });
 
-    const mockNearbyRiders = [
-      {
-        id: '1',
-        name: '速度與激情',
-        avatar: 'https://images.unsplash.com/photo-1566492031773-4f4e44671d66?w=150',
-        distance: '2.3km',
-        bike: 'Yamaha R1',
-        status: 'online'
-      },
-      {
-        id: '2',
-        name: '城市漫遊',
-        avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150',
-        distance: '4.1km',
-        bike: 'Honda CBR',
-        status: 'riding'
-      }
-    ];
+  const [recentActivities] = useState([
+    {
+      id: 1,
+      type: '騎行記錄',
+      distance: '15.2km',
+      time: '52分鐘',
+      date: '今天',
+      calories: 320
+    },
+    {
+      id: 2,
+      type: '群組活動',
+      name: '台北河濱夜騎',
+      participants: 12,
+      date: '昨天',
+      status: '已完成'
+    },
+    {
+      id: 3,
+      type: '挑戰達成',
+      achievement: '連續騎行5天',
+      reward: '15積分',
+      date: '2天前'
+    }
+  ]);
 
-    setPosts(mockPosts);
-    setNearbyRiders(mockNearbyRiders);
-  }, []);
+  const [upcomingEvents] = useState([
+    {
+      id: 1,
+      title: '陽明山挑戰賽',
+      date: '1月20日',
+      time: '08:00',
+      participants: 8,
+      maxParticipants: 15,
+      difficulty: 'advanced'
+    },
+    {
+      id: 2,
+      title: '淡水休閒騎',
+      date: '1月18日',
+      time: '10:00',
+      participants: 6,
+      maxParticipants: 12,
+      difficulty: 'beginner'
+    }
+  ]);
 
-  const handleLike = (postId) => {
-    setPosts(posts.map(post => 
-      post.id === postId 
-        ? { ...post, likes: post.likes + 1 }
-        : post
-    ));
+  const handleQuickAction = (action) => {
+    switch (action) {
+      case 'record':
+        toast.success('開始騎行記錄！', {
+          style: { 
+            background: '#dc2626', 
+            color: '#ffffff',
+            fontWeight: '600'
+          }
+        });
+        break;
+      case 'explore':
+        toast.success('探索路線！', {
+          style: { 
+            background: '#dc2626', 
+            color: '#ffffff',
+            fontWeight: '600'
+          }
+        });
+        break;
+      case 'friends':
+        toast.success('尋找騎友！', {
+          style: { 
+            background: '#dc2626', 
+            color: '#ffffff',
+            fontWeight: '600'
+          }
+        });
+        break;
+      case 'events':
+        toast.success('創建活動！', {
+          style: { 
+            background: '#dc2626', 
+            color: '#ffffff',
+            fontWeight: '600'
+          }
+        });
+        break;
+      default:
+        break;
+    }
   };
 
-  const QuickActionCard = ({ icon: Icon, title, subtitle, color, onClick }) => (
-    <div 
-      onClick={onClick}
-      className={`card cursor-pointer transform hover:scale-105 ${color}`}
-    >
-      <div className="flex items-center space-x-3">
-        <div className="p-3 bg-white rounded-xl shadow-sm">
-          <Icon size={24} className="text-bike-600" />
-        </div>
-        <div>
-          <h3 className="font-semibold text-white">{title}</h3>
-          <p className="text-sm text-white/80">{subtitle}</p>
-        </div>
-      </div>
-    </div>
-  );
+  const getDifficultyColor = (difficulty) => {
+    switch (difficulty) {
+      case 'beginner': return '#10b981';
+      case 'intermediate': return '#dc2626';
+      case 'advanced': return '#ef4444';
+      default: return '#6b7280';
+    }
+  };
+
+  const getDifficultyText = (difficulty) => {
+    switch (difficulty) {
+      case 'beginner': return '休閒';
+      case 'intermediate': return '中等';
+      case 'advanced': return '挑戰';
+      default: return '未知';
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* 頂部標題欄 */}
-      <div className="gradient-bg px-4 py-6 pb-8">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-white">
-              嗨，{user?.name || '騎行者'}！
-            </h1>
-            <p className="text-blue-100">今天想騎去哪裡？</p>
+    <div style={{ 
+      minHeight: '100vh', 
+      backgroundColor: '#ffffff',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+    }}>
+      {/* 頂部問候區域 */}
+      <div style={{
+        background: 'linear-gradient(135deg, #dc2626 0%, #ef4444 100%)',
+        padding: '40px 20px 60px 20px',
+        borderRadius: '0 0 32px 32px',
+        marginBottom: '20px'
+      }}>
+        <div style={{ maxWidth: '400px', margin: '0 auto' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
+            <div style={{
+              width: '64px',
+              height: '64px',
+              borderRadius: '50%',
+              background: 'rgba(255, 255, 255, 0.2)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              border: '3px solid rgba(255, 255, 255, 0.3)'
+            }}>
+              <span style={{ fontSize: '24px', fontWeight: '700', color: '#ffffff' }}>李</span>
+            </div>
+            <div>
+              <h1 style={{ fontSize: '24px', fontWeight: '800', color: '#ffffff', margin: 0 }}>早安，小明！</h1>
+              <p style={{ fontSize: '14px', color: '#ffffff', margin: 0, opacity: 0.9, fontWeight: '500' }}>今天是騎行的好日子</p>
+            </div>
           </div>
-          <div className="flex space-x-3">
-            <button className="p-2 bg-white/20 rounded-xl">
-              <Search size={20} className="text-white" />
-            </button>
-            <button className="p-2 bg-white/20 rounded-xl relative">
-              <Bell size={20} className="text-white" />
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
-            </button>
-          </div>
-        </div>
 
-        {/* 快速動作區 */}
-        <div className="grid grid-cols-2 gap-3">
-          <QuickActionCard
-            icon={Navigation}
-            title="開始騎行"
-            subtitle="記錄你的路線"
-            color="bg-gradient-to-br from-green-500 to-green-600"
-            onClick={() => window.location.href = '/map'}
-          />
-          <QuickActionCard
-            icon={Users}
-            title="找人揪團"
-            subtitle="附近的騎士"
-            color="bg-gradient-to-br from-purple-500 to-purple-600"
-            onClick={() => window.location.href = '/groups'}
-          />
-          <QuickActionCard
-            icon={MapPin}
-            title="附近商家"
-            subtitle="維修店・車行・加油站"
-            color="bg-gradient-to-br from-emerald-500 to-emerald-600"
-            onClick={() => window.location.href = '/store-map'}
-          />
-          <QuickActionCard
-            icon={Camera}
-            title="社群動態"
-            subtitle="分享精彩瞬間"
-            color="bg-gradient-to-br from-rose-500 to-rose-600"
-            onClick={() => window.location.href = '/social'}
-          />
-        </div>
-        
-        {/* 地圖選擇提示 */}
-        <div className="mt-4 p-3 bg-blue-50 rounded-xl border border-blue-200">
-          <div className="flex items-start space-x-3">
-            <Info size={16} className="text-blue-600 mt-0.5 flex-shrink-0" />
-            <div className="flex-1">
-              <h4 className="font-medium text-blue-800 text-sm">功能說明</h4>
-              <p className="text-blue-700 text-xs mt-1">
-                🗺️ <strong>開始騎行</strong>：Google Maps (需 API Key，功能完整)<br/>
-                🏪 <strong>附近商家</strong>：OpenStreetMap (完全免費，支援導航)
-              </p>
+          {/* 今日數據卡片 */}
+          <div style={{
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            borderRadius: '20px',
+            padding: '24px',
+            boxShadow: '0 8px 25px rgba(0, 0, 0, 0.1)'
+          }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '28px', fontWeight: '900', color: '#111827', marginBottom: '4px' }}>
+                  {todayStats.distance}
+                </div>
+                <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: '600' }}>距離(km)</div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '28px', fontWeight: '900', color: '#111827', marginBottom: '4px' }}>
+                  {todayStats.time}
+                </div>
+                <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: '600' }}>騎行時間(分)</div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '28px', fontWeight: '900', color: '#111827', marginBottom: '4px' }}>
+                  {todayStats.calories}
+                </div>
+                <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: '600' }}>燃燒卡路里</div>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="px-4 -mt-4">
-        {/* 附近騎士 */}
-        <div className="card mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-800">附近騎士</h2>
-            <button className="text-bike-600 text-sm font-medium">查看全部</button>
+      <div style={{ maxWidth: '400px', margin: '0 auto', padding: '0 20px' }}>
+        {/* 快速操作 */}
+        <div style={{ marginBottom: '32px' }}>
+          <h2 style={{ fontSize: '20px', fontWeight: '800', color: '#111827', marginBottom: '16px' }}>快速開始</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
+            <button
+              onClick={() => handleQuickAction('record')}
+              style={{
+                backgroundColor: '#ffffff',
+                border: '1px solid #dc2626',
+                borderRadius: '16px',
+                padding: '20px',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                textAlign: 'left'
+              }}
+            >
+              <div style={{
+                width: '40px',
+                height: '40px',
+                backgroundColor: '#fee2e2',
+                borderRadius: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '12px'
+              }}>
+                <MapPin size={20} style={{ color: '#dc2626' }} />
+              </div>
+              <div style={{ fontSize: '16px', fontWeight: '700', color: '#111827', marginBottom: '4px' }}>開始騎行</div>
+              <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: '500' }}>記錄你的騎行路線</div>
+            </button>
+
+            <button
+              onClick={() => handleQuickAction('explore')}
+              style={{
+                backgroundColor: '#ffffff',
+                border: '1px solid #dc2626',
+                borderRadius: '16px',
+                padding: '20px',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                textAlign: 'left'
+              }}
+            >
+              <div style={{
+                width: '40px',
+                height: '40px',
+                backgroundColor: '#fee2e2',
+                borderRadius: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '12px'
+              }}>
+                <TrendingUp size={20} style={{ color: '#dc2626' }} />
+              </div>
+              <div style={{ fontSize: '16px', fontWeight: '700', color: '#111827', marginBottom: '4px' }}>探索路線</div>
+              <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: '500' }}>發現新的騎行路線</div>
+            </button>
+
+            <button
+              onClick={() => handleQuickAction('friends')}
+              style={{
+                backgroundColor: '#ffffff',
+                border: '1px solid #dc2626',
+                borderRadius: '16px',
+                padding: '20px',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                textAlign: 'left'
+              }}
+            >
+              <div style={{
+                width: '40px',
+                height: '40px',
+                backgroundColor: '#fee2e2',
+                borderRadius: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '12px'
+              }}>
+                <Users size={20} style={{ color: '#dc2626' }} />
+              </div>
+              <div style={{ fontSize: '16px', fontWeight: '700', color: '#111827', marginBottom: '4px' }}>找騎友</div>
+              <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: '500' }}>尋找附近的騎行夥伴</div>
+            </button>
+
+            <button
+              onClick={() => handleQuickAction('events')}
+              style={{
+                backgroundColor: '#ffffff',
+                border: '1px solid #dc2626',
+                borderRadius: '16px',
+                padding: '20px',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                textAlign: 'left'
+              }}
+            >
+              <div style={{
+                width: '40px',
+                height: '40px',
+                backgroundColor: '#fee2e2',
+                borderRadius: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '12px'
+              }}>
+                <Calendar size={20} style={{ color: '#dc2626' }} />
+              </div>
+              <div style={{ fontSize: '16px', fontWeight: '700', color: '#111827', marginBottom: '4px' }}>創建活動</div>
+              <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: '500' }}>組織騎行活動</div>
+            </button>
           </div>
-          <div className="flex space-x-4 overflow-x-auto pb-2">
-            {nearbyRiders.map(rider => (
-              <div key={rider.id} className="flex-shrink-0 text-center">
-                <div className="relative">
-                  <img
-                    src={rider.avatar}
-                    alt={rider.name}
-                    className="w-16 h-16 rounded-full object-cover border-2 border-bike-200"
-                  />
-                  <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${
-                    rider.status === 'online' ? 'bg-green-500' : 'bg-orange-500'
-                  }`}></div>
+        </div>
+
+        {/* 本週進度 */}
+        <div style={{ marginBottom: '32px' }}>
+          <div style={{
+            backgroundColor: '#ffffff',
+            borderRadius: '20px',
+            padding: '24px',
+            border: '1px solid #ef4444',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#111827', margin: 0 }}>本週目標</h3>
+              <Trophy size={20} style={{ color: '#dc2626' }} />
+            </div>
+
+            <div style={{ marginBottom: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <span style={{ fontSize: '14px', fontWeight: '600', color: '#111827' }}>騎行進度</span>
+                <span style={{ fontSize: '14px', fontWeight: '600', color: '#dc2626' }}>
+                  {weeklyProgress.current}/{weeklyProgress.goal}km
+                </span>
+              </div>
+              <div style={{
+                width: '100%',
+                height: '8px',
+                backgroundColor: '#fee2e2',
+                borderRadius: '4px',
+                overflow: 'hidden'
+              }}>
+                <div style={{
+                  width: `${weeklyProgress.current}%`,
+                  height: '100%',
+                  background: 'linear-gradient(90deg, #dc2626 0%, #ef4444 100%)',
+                  borderRadius: '4px'
+                }} />
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div style={{ fontSize: '24px', fontWeight: '900', color: '#111827' }}>
+                  {weeklyProgress.streakDays}
                 </div>
-                <p className="text-xs font-medium mt-2 w-16 truncate">{rider.name}</p>
-                <p className="text-xs text-gray-500">{rider.distance}</p>
+                <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: '600' }}>連續騎行天數</div>
+              </div>
+              <div style={{
+                padding: '8px 16px',
+                backgroundColor: '#fee2e2',
+                borderRadius: '12px'
+              }}>
+                <span style={{ fontSize: '12px', fontWeight: '700', color: '#dc2626' }}>
+                  還差 {weeklyProgress.goal - weeklyProgress.current}km
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 即將到來的活動 */}
+        <div style={{ marginBottom: '32px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#111827', margin: 0 }}>即將到來</h3>
+            <button style={{
+              fontSize: '14px',
+              fontWeight: '600',
+              color: '#dc2626',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}>
+              查看更多 <ArrowRight size={14} />
+            </button>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {upcomingEvents.map(event => (
+              <div key={event.id} style={{
+                backgroundColor: '#ffffff',
+                borderRadius: '16px',
+                padding: '20px',
+                border: '1px solid #f3f4f6',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                  <div>
+                    <h4 style={{ fontSize: '16px', fontWeight: '700', color: '#111827', margin: '0 0 4px 0' }}>
+                      {event.title}
+                    </h4>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '12px', color: '#6b7280' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <Calendar size={12} />
+                        <span style={{ fontWeight: '600' }}>{event.date}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <Clock size={12} />
+                        <span style={{ fontWeight: '600' }}>{event.time}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <span style={{
+                    padding: '4px 8px',
+                    borderRadius: '6px',
+                    fontSize: '10px',
+                    fontWeight: '700',
+                    backgroundColor: event.difficulty === 'beginner' ? '#dcfce7' : event.difficulty === 'advanced' ? '#fee2e2' : '#fee2e2',
+                    color: getDifficultyColor(event.difficulty)
+                  }}>
+                    {getDifficultyText(event.difficulty)}
+                  </span>
+                </div>
+                <div style={{ fontSize: '12px', color: '#9ca3af', fontWeight: '600' }}>
+                  {event.participants}/{event.maxParticipants} 人參加
+                </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* 今日統計 */}
-        <div className="grid grid-cols-3 gap-3 mb-6">
-          <div className="card bg-gradient-to-br from-bike-50 to-bike-100 text-center">
-            <div className="text-2xl font-bold text-bike-600">{user?.stats?.totalDistance || 0}</div>
-            <div className="text-xs text-bike-600">總里程(km)</div>
-          </div>
-          <div className="card bg-gradient-to-br from-green-50 to-green-100 text-center">
-            <div className="text-2xl font-bold text-green-600">{user?.stats?.totalRides || 0}</div>
-            <div className="text-xs text-green-600">騎行次數</div>
-          </div>
-          <div className="card bg-gradient-to-br from-purple-50 to-purple-100 text-center">
-            <div className="text-2xl font-bold text-purple-600">{user?.stats?.totalTime || 0}</div>
-            <div className="text-xs text-purple-600">騎行時數</div>
-          </div>
-        </div>
-
-        {/* 動態時間軸 */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-800">最新動態</h2>
-            <button className="btn-secondary text-sm py-2 px-4">
-              <Camera size={16} className="mr-2" />
-              發布動態
-            </button>
-          </div>
-
-          {posts.map(post => (
-            <div key={post.id} className="card">
-              {/* 用戶信息 */}
-              <div className="flex items-center space-x-3 mb-4">
-                <img
-                  src={post.user.avatar}
-                  alt={post.user.name}
-                  className="w-12 h-12 rounded-full object-cover"
-                />
-                <div className="flex-1">
-                  <div className="flex items-center space-x-2">
-                    <h3 className="font-semibold text-gray-800">{post.user.name}</h3>
-                    {post.user.verified && (
-                      <div className="w-4 h-4 bg-bike-500 rounded-full flex items-center justify-center">
-                        <span className="text-white text-xs">✓</span>
+        {/* 最近活動 */}
+        <div style={{ marginBottom: '32px' }}>
+          <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#111827', marginBottom: '16px' }}>最近活動</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {recentActivities.map(activity => (
+              <div key={activity.id} style={{
+                backgroundColor: '#ffffff',
+                borderRadius: '16px',
+                padding: '20px',
+                border: '1px solid #f3f4f6',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: '14px', fontWeight: '700', color: '#111827', marginBottom: '4px' }}>
+                      {activity.type}
+                    </div>
+                    {activity.distance && (
+                      <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '2px', fontWeight: '600' }}>
+                        {activity.distance} • {activity.time}
+                      </div>
+                    )}
+                    {activity.name && (
+                      <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '2px', fontWeight: '600' }}>
+                        {activity.name} • {activity.participants} 人參加
+                      </div>
+                    )}
+                    {activity.achievement && (
+                      <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '2px', fontWeight: '600' }}>
+                        {activity.achievement} • 獲得 {activity.reward}
                       </div>
                     )}
                   </div>
-                  <div className="flex items-center space-x-2 text-sm text-gray-500">
-                    <Clock size={12} />
-                    <span>{post.timestamp}</span>
-                    {post.location && (
-                      <>
-                        <span>·</span>
-                        <MapPin size={12} />
-                        <span>{post.location}</span>
-                      </>
-                    )}
-                  </div>
+                  <div style={{ fontSize: '12px', color: '#9ca3af', fontWeight: '600' }}>{activity.date}</div>
                 </div>
               </div>
-
-              {/* 內容 */}
-              <p className="text-gray-800 mb-4">{post.content}</p>
-
-              {/* 圖片 */}
-              {post.image && (
-                <img
-                  src={post.image}
-                  alt="Post content"
-                  className="w-full h-48 object-cover rounded-xl mb-4"
-                />
-              )}
-
-              {/* 騎行數據 */}
-              {post.distance && (
-                <div className="bg-bike-50 rounded-xl p-3 mb-4">
-                  <div className="flex items-center space-x-2 text-bike-600">
-                    <Zap size={16} />
-                    <span className="font-semibold">騎行數據</span>
-                  </div>
-                  <div className="text-2xl font-bold text-bike-600 mt-1">
-                    {post.distance}
-                  </div>
-                </div>
-              )}
-
-              {/* 互動按鈕 */}
-              <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                <button
-                  onClick={() => handleLike(post.id)}
-                  className="flex items-center space-x-2 text-gray-500 hover:text-red-500 transition-colors"
-                >
-                  <Heart size={18} />
-                  <span className="text-sm">{post.likes}</span>
-                </button>
-                <button className="flex items-center space-x-2 text-gray-500 hover:text-bike-500 transition-colors">
-                  <MessageCircle size={18} />
-                  <span className="text-sm">{post.comments}</span>
-                </button>
-                <button className="flex items-center space-x-2 text-gray-500 hover:text-green-500 transition-colors">
-                  <Share2 size={18} />
-                  <span className="text-sm">分享</span>
-                </button>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </div>

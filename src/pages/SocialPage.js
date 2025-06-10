@@ -10,7 +10,16 @@ import {
   MapPin,
   Clock,
   Crown,
-  Send
+  Send,
+  MoreHorizontal,
+  ThumbsUp,
+  Users,
+  Star,
+  Zap,
+  Award,
+  TrendingUp,
+  Filter,
+  Search
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
@@ -29,6 +38,7 @@ const SocialPage = () => {
   const [showCommentModal, setShowCommentModal] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
   const [comment, setComment] = useState('');
+  const [filterType, setFilterType] = useState('all');
 
   useEffect(() => {
     // 模擬獲取社群動態
@@ -231,315 +241,495 @@ const SocialPage = () => {
     return true;
   });
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* 頂部導覽 */}
-      <div className="bg-white border-b border-gray-200 px-4 py-4 sticky top-0 z-10">
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-bold text-gray-800">社群牆</h1>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="bg-bike-500 text-white p-2 rounded-xl hover:bg-bike-600 transition-colors"
+  const getFilteredPosts = () => {
+    switch (filterType) {
+      case 'challenges':
+        return posts.filter(post => post.tags.includes('挑戰'));
+      case 'casual':
+        return posts.filter(post => post.tags.includes('休閒'));
+      case 'equipment':
+        return posts.filter(post => post.tags.includes('裝備'));
+      default:
+        return posts;
+    }
+  };
+
+  const CreatePostModal = () => (
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000,
+      padding: '20px'
+    }}>
+      <div style={{
+        backgroundColor: '#ffffff',
+        borderRadius: '20px',
+        padding: '24px',
+        width: '100%',
+        maxWidth: '400px',
+        maxHeight: '80vh',
+        overflowY: 'auto'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+          <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#111827', margin: 0 }}>發布動態</h3>
+          <button 
+            onClick={() => setShowCreateModal(false)}
+            style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '8px',
+              backgroundColor: '#f9fafb',
+              border: '1px solid #e5e7eb',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
           >
-            <Plus size={20} />
+            ×
           </button>
         </div>
+        
+        <textarea 
+          placeholder="分享你的騎行體驗..."
+          style={{
+            width: '100%',
+            height: '120px',
+            padding: '16px',
+            border: '1px solid #e5e7eb',
+            borderRadius: '12px',
+            fontSize: '16px',
+            resize: 'none',
+            marginBottom: '16px',
+            fontFamily: 'inherit'
+          }}
+        />
+        
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <button style={{
+            flex: 1,
+            padding: '12px',
+            borderRadius: '10px',
+            border: '1px solid #e5e7eb',
+            backgroundColor: '#f9fafb',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            fontSize: '14px',
+            fontWeight: '600',
+            color: '#6b7280'
+          }}>
+            <Camera size={16} />
+            添加照片
+          </button>
+          <button 
+            onClick={() => {
+              setShowCreateModal(false);
+              toast.success('動態發布成功！', {
+                style: { 
+                  background: '#dc2626', 
+                  color: '#ffffff',
+                  fontWeight: '600'
+                }
+              });
+            }}
+            style={{
+              flex: 1,
+              padding: '12px',
+              borderRadius: '10px',
+              background: 'linear-gradient(135deg, #dc2626 0%, #ef4444 100%)',
+              color: '#ffffff',
+              border: 'none',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '700'
+            }}
+          >
+            發布
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 
-        {/* 標籤切換 */}
-        <div className="flex space-x-1">
-          {[
-            { key: 'all', label: '全部' },
-            { key: 'following', label: '關注中' },
-            { key: 'popular', label: '熱門' }
-          ].map(tab => (
+  return (
+    <div style={{ 
+      minHeight: '100vh', 
+      backgroundColor: '#ffffff',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+    }}>
+      {/* 頂部導航區域 */}
+      <div style={{
+        background: 'linear-gradient(135deg, #dc2626 0%, #ef4444 100%)',
+        padding: '20px',
+        marginBottom: '20px'
+      }}>
+        <div style={{ maxWidth: '400px', margin: '0 auto' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <h1 style={{ fontSize: '24px', fontWeight: '800', color: '#ffffff', margin: 0 }}>騎行社群</h1>
             <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`px-4 py-2 rounded-xl font-medium transition-colors ${
-                activeTab === tab.key
-                  ? 'bg-bike-500 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
+              onClick={() => setShowCreateModal(true)}
+              style={{
+                width: '40px',
+                height: '40px',
+                borderRadius: '12px',
+                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                border: 'none',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#ffffff'
+              }}
             >
-              {tab.label}
+              <Camera size={20} />
             </button>
-          ))}
+          </div>
+
+          {/* 搜索框 */}
+          <div style={{ position: 'relative', marginBottom: '16px' }}>
+            <Search size={18} style={{ 
+              position: 'absolute', 
+              left: '16px', 
+              top: '50%', 
+              transform: 'translateY(-50%)', 
+              color: '#ffffff', 
+              opacity: 0.8 
+            }} />
+            <input
+              type="text"
+              placeholder="搜索騎行動態..."
+              style={{
+                width: '100%',
+                padding: '12px 16px 12px 48px',
+                borderRadius: '12px',
+                border: 'none',
+                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                color: '#ffffff',
+                fontSize: '16px',
+                fontWeight: '500'
+              }}
+            />
+          </div>
+
+          {/* 篩選標籤 */}
+          <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
+            {[
+              { key: 'all', label: '全部', icon: '🏠' },
+              { key: 'challenges', label: '挑戰', icon: '🏔️' },
+              { key: 'casual', label: '休閒', icon: '🚴' },
+              { key: 'equipment', label: '裝備', icon: '⚙️' }
+            ].map(filter => (
+              <button
+                key={filter.key}
+                onClick={() => setFilterType(filter.key)}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '20px',
+                  border: 'none',
+                  backgroundColor: filterType === filter.key ? '#ffffff' : 'rgba(255, 255, 255, 0.2)',
+                  color: filterType === filter.key ? '#dc2626' : '#ffffff',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <span>{filter.icon}</span>
+                {filter.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* 動態列表 */}
-      <div className="px-4 py-4 space-y-4">
-        {filteredPosts.map(post => (
-          <div key={post.id} className="card">
-            {/* 用戶信息 */}
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center space-x-3">
-                <img
-                  src={post.user.avatar}
-                  alt={post.user.name}
-                  className="w-12 h-12 rounded-full object-cover"
-                />
-                <div>
-                  <div className="flex items-center space-x-2">
-                    <h3 className="font-semibold text-gray-800">{post.user.name}</h3>
+      <div style={{ maxWidth: '400px', margin: '0 auto', padding: '0 20px' }}>
+        {/* 動態列表 */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', marginBottom: '32px' }}>
+          {getFilteredPosts().map(post => (
+            <div key={post.id} style={{
+              backgroundColor: '#ffffff',
+              borderRadius: '20px',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
+              border: '1px solid #f3f4f6',
+              overflow: 'hidden'
+            }}>
+              {/* 用戶信息頭部 */}
+              <div style={{ padding: '20px 20px 16px 20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ position: 'relative' }}>
+                    <img
+                      src={post.user.avatar}
+                      alt={post.user.name}
+                      style={{
+                        width: '48px',
+                        height: '48px',
+                        borderRadius: '50%',
+                        objectFit: 'cover',
+                        border: '2px solid #dc2626'
+                      }}
+                    />
                     {post.user.verified && (
-                      <Crown size={16} className="text-yellow-500" />
+                      <div style={{
+                        position: 'absolute',
+                        bottom: '-2px',
+                        right: '-2px',
+                        width: '18px',
+                        height: '18px',
+                        backgroundColor: '#dc2626',
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        border: '2px solid #ffffff'
+                      }}>
+                        <span style={{ color: '#ffffff', fontSize: '10px', fontWeight: '700' }}>✓</span>
+                      </div>
                     )}
                   </div>
-                  <div className="flex items-center space-x-2 text-sm text-gray-500">
-                    <Clock size={12} />
-                    <span>{post.timestamp}</span>
-                    {post.location && (
-                      <>
-                        <span>·</span>
-                        <MapPin size={12} />
-                        <span>{post.location}</span>
-                      </>
-                    )}
+                  
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
+                      <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#111827', margin: 0 }}>{post.user.name}</h3>
+                      <span style={{
+                        padding: '2px 8px',
+                        borderRadius: '12px',
+                        fontSize: '10px',
+                        fontWeight: '700',
+                        backgroundColor: post.user.level === 'PRO' ? '#fee2e2' : '#f3f4f6',
+                        color: post.user.level === 'PRO' ? '#dc2626' : '#6b7280'
+                      }}>
+                        {post.user.level}
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <Clock size={12} style={{ color: '#9ca3af' }} />
+                        <span style={{ fontSize: '12px', color: '#9ca3af', fontWeight: '500' }}>{post.timestamp}</span>
+                      </div>
+                      {post.location && (
+                        <>
+                          <span style={{ color: '#d1d5db' }}>•</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <MapPin size={12} style={{ color: '#9ca3af' }} />
+                            <span style={{ fontSize: '12px', color: '#9ca3af', fontWeight: '500' }}>{post.location}</span>
+                          </div>
+                        </>
+                      )}
+                    </div>
                   </div>
+                  
+                  <button style={{
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '8px',
+                    backgroundColor: '#f9fafb',
+                    border: '1px solid #e5e7eb',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                    <MoreHorizontal size={16} style={{ color: '#6b7280' }} />
+                  </button>
                 </div>
               </div>
-              
-              {post.user.id !== user.id && (
-                <div className="flex space-x-2">
-                  <button
-                    onClick={() => handleFollow(post.user.id)}
-                    className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                      post.user.following
-                        ? 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                        : 'bg-bike-500 text-white hover:bg-bike-600'
-                    }`}
-                  >
-                    {post.user.following ? '已關注' : '關注'}
-                  </button>
-                  <button
-                    onClick={() => handleStartPrivateChat(post.user)}
-                    className="px-3 py-1 bg-green-500 text-white rounded-full text-sm font-medium hover:bg-green-600 transition-colors"
-                  >
-                    私訊
-                  </button>
+
+              {/* 內容文字 */}
+              <div style={{ paddingLeft: '20px', paddingRight: '20px', marginBottom: '16px' }}>
+                <p style={{ 
+                  fontSize: '15px', 
+                  lineHeight: '1.6', 
+                  color: '#111827', 
+                  margin: 0, 
+                  fontWeight: '500' 
+                }}>
+                  {post.content}
+                </p>
+                
+                {/* 標籤 */}
+                {post.tags && (
+                  <div style={{ display: 'flex', gap: '8px', marginTop: '12px', flexWrap: 'wrap' }}>
+                    {post.tags.map(tag => (
+                      <span key={tag} style={{
+                        padding: '4px 10px',
+                        borderRadius: '12px',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        backgroundColor: '#fee2e2',
+                        color: '#dc2626'
+                      }}>
+                        #{tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* 圖片 */}
+              {post.images && post.images.length > 0 && (
+                <div style={{ paddingLeft: '20px', paddingRight: '20px', marginBottom: '16px' }}>
+                  <div style={{ 
+                    display: 'grid', 
+                    gridTemplateColumns: post.images.length === 1 ? '1fr' : 'repeat(2, 1fr)', 
+                    gap: '8px' 
+                  }}>
+                    {post.images.map((image, index) => (
+                      <img
+                        key={index}
+                        src={image}
+                        alt="Post"
+                        style={{
+                          width: '100%',
+                          height: post.images.length === 1 ? '240px' : '160px',
+                          objectFit: 'cover',
+                          borderRadius: '12px'
+                        }}
+                      />
+                    ))}
+                  </div>
                 </div>
               )}
-            </div>
 
-            {/* 內容 */}
-            <p className="text-gray-800 mb-4">{post.content}</p>
-
-            {/* 標籤 */}
-            {post.tags.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-4">
-                {post.tags.map(tag => (
-                  <span key={tag} className="px-2 py-1 bg-bike-100 text-bike-700 rounded-full text-sm">
-                    #{tag}
-                  </span>
-                ))}
-              </div>
-            )}
-
-            {/* 媒體內容 */}
-            {post.images.length > 0 && (
-              <div className={`grid gap-2 mb-4 ${
-                post.images.length === 1 ? 'grid-cols-1' : 
-                post.images.length === 2 ? 'grid-cols-2' : 
-                'grid-cols-2'
-              }`}>
-                {post.images.map((image, index) => (
-                  <img
-                    key={index}
-                    src={image}
-                    alt={`Post image ${index + 1}`}
-                    className="w-full h-48 object-cover rounded-xl"
-                  />
-                ))}
-              </div>
-            )}
-
-            {post.video && (
-              <video
-                src={post.video}
-                controls
-                className="w-full h-48 object-cover rounded-xl mb-4"
-              />
-            )}
-
-            {/* 互動統計 */}
-            <div className="flex items-center space-x-4 text-sm text-gray-500 mb-4">
-              <span>{post.likes} 讚</span>
-              <span>{post.comments} 評論</span>
-              <span>{post.shares} 分享</span>
-            </div>
-
-            {/* 互動按鈕 */}
-            <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-              <button
-                onClick={() => handleLike(post.id)}
-                className={`flex items-center space-x-2 transition-colors ${
-                  post.isLiked ? 'text-red-500' : 'text-gray-500 hover:text-red-500'
-                }`}
-              >
-                <Heart size={18} className={post.isLiked ? 'fill-current' : ''} />
-                <span className="text-sm">讚</span>
-              </button>
-              
-              <button
-                onClick={() => handleComment(post)}
-                className="flex items-center space-x-2 text-gray-500 hover:text-bike-500 transition-colors"
-              >
-                <MessageCircle size={18} />
-                <span className="text-sm">評論</span>
-              </button>
-              
-              <button
-                onClick={() => handleShare(post)}
-                className="flex items-center space-x-2 text-gray-500 hover:text-green-500 transition-colors"
-              >
-                <Share2 size={18} />
-                <span className="text-sm">分享</span>
-              </button>
-              
-              <button
-                onClick={() => handleBookmark(post.id)}
-                className={`flex items-center space-x-2 transition-colors ${
-                  post.isBookmarked ? 'text-yellow-500' : 'text-gray-500 hover:text-yellow-500'
-                }`}
-              >
-                <Bookmark size={18} className={post.isBookmarked ? 'fill-current' : ''} />
-                <span className="text-sm">收藏</span>
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* 創建動態模態框 */}
-      {showCreateModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl w-full max-w-md max-h-[80vh] overflow-y-auto">
-            <div className="p-6">
-              <h2 className="text-xl font-bold mb-6">發布動態</h2>
-              
-              <form onSubmit={handleCreatePost} className="space-y-4">
-                <textarea
-                  value={newPost.content}
-                  onChange={(e) => setNewPost({...newPost, content: e.target.value})}
-                  className="w-full h-32 p-3 border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-bike-500"
-                  placeholder="分享你的騎行心得..."
-                  required
-                />
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">地點 (可選)</label>
-                  <input
-                    type="text"
-                    value={newPost.location}
-                    onChange={(e) => setNewPost({...newPost, location: e.target.value})}
-                    className="input-field"
-                    placeholder="輸入地點"
-                  />
-                </div>
-
-                <div className="flex space-x-4">
-                  <button
-                    type="button"
-                    className="flex-1 border-2 border-dashed border-gray-300 rounded-xl p-4 text-center hover:border-bike-500 transition-colors"
-                  >
-                    <Camera size={24} className="mx-auto mb-2 text-gray-400" />
-                    <span className="text-sm text-gray-600">添加照片</span>
-                  </button>
-                  <button
-                    type="button"
-                    className="flex-1 border-2 border-dashed border-gray-300 rounded-xl p-4 text-center hover:border-bike-500 transition-colors"
-                  >
-                    <Video size={24} className="mx-auto mb-2 text-gray-400" />
-                    <span className="text-sm text-gray-600">添加影片</span>
-                  </button>
-                </div>
-
-                <div className="flex space-x-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => setShowCreateModal(false)}
-                    className="flex-1 btn-secondary py-3"
-                  >
-                    取消
-                  </button>
-                  <button
-                    type="submit"
-                    className="flex-1 btn-primary py-3"
-                  >
-                    發布
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 評論模態框 */}
-      {showCommentModal && selectedPost && (
-        <div className="fixed inset-0 bg-black/50 flex items-end justify-center p-0 z-50">
-          <div className="bg-white rounded-t-2xl w-full max-h-[60vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold">評論</h3>
-                <button
-                  onClick={() => setShowCommentModal(false)}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  ✕
-                </button>
-              </div>
-
-              {/* 評論輸入 */}
-              <div className="flex items-center space-x-3 mb-4">
-                <img
-                  src={user.avatar}
-                  alt={user.name}
-                  className="w-10 h-10 rounded-full object-cover"
-                />
-                <div className="flex-1 flex space-x-2">
-                  <input
-                    type="text"
-                    value={comment}
-                    onChange={(e) => setComment(e.target.value)}
-                    className="flex-1 px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-bike-500"
-                    placeholder="寫下你的評論..."
-                  />
-                  <button
-                    onClick={handleSendComment}
-                    className="bg-bike-500 text-white p-2 rounded-xl hover:bg-bike-600 transition-colors"
-                  >
-                    <Send size={16} />
-                  </button>
-                </div>
-              </div>
-
-              {/* 模擬評論列表 */}
-              <div className="space-y-3">
-                <div className="flex space-x-3">
-                  <img
-                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40"
-                    alt="Commenter"
-                    className="w-8 h-8 rounded-full object-cover"
-                  />
-                  <div className="flex-1">
-                    <div className="bg-gray-100 rounded-xl p-3">
-                      <p className="font-medium text-sm">騎行愛好者</p>
-                      <p className="text-sm">風景真的很美！下次也想去</p>
+              {/* 騎行數據 */}
+              {post.rideData && (
+                <div style={{ 
+                  margin: '0 20px 16px 20px',
+                  background: 'linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)',
+                  borderRadius: '16px',
+                  padding: '16px'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                    <Zap size={16} style={{ color: '#dc2626' }} />
+                    <span style={{ fontSize: '14px', fontWeight: '700', color: '#dc2626' }}>騎行數據</span>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+                    <div>
+                      <div style={{ fontSize: '18px', fontWeight: '800', color: '#111827' }}>{post.rideData.distance}</div>
+                      <div style={{ fontSize: '11px', color: '#6b7280', fontWeight: '600' }}>距離</div>
                     </div>
-                    <div className="flex items-center space-x-3 mt-1 text-xs text-gray-500">
-                      <span>2小時前</span>
-                      <button className="hover:text-bike-500">回覆</button>
-                      <button className="hover:text-red-500">讚</button>
+                    <div>
+                      <div style={{ fontSize: '18px', fontWeight: '800', color: '#111827' }}>{post.rideData.time}</div>
+                      <div style={{ fontSize: '11px', color: '#6b7280', fontWeight: '600' }}>時間</div>
+                    </div>
+                    {post.rideData.elevation && (
+                      <div>
+                        <div style={{ fontSize: '18px', fontWeight: '800', color: '#111827' }}>{post.rideData.elevation}</div>
+                        <div style={{ fontSize: '11px', color: '#6b7280', fontWeight: '600' }}>海拔</div>
+                      </div>
+                    )}
+                    <div>
+                      <div style={{ fontSize: '18px', fontWeight: '800', color: '#111827' }}>{post.rideData.avgSpeed}</div>
+                      <div style={{ fontSize: '11px', color: '#6b7280', fontWeight: '600' }}>平均速度</div>
                     </div>
                   </div>
                 </div>
+              )}
+
+              {/* 互動按鈕 */}
+              <div style={{ 
+                padding: '16px 20px', 
+                borderTop: '1px solid #f3f4f6',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}>
+                <button
+                  onClick={() => handleLike(post.id)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '8px 16px',
+                    borderRadius: '20px',
+                    border: 'none',
+                    backgroundColor: post.isLiked ? '#fee2e2' : '#f9fafb',
+                    color: post.isLiked ? '#dc2626' : '#6b7280',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  <Heart size={16} fill={post.isLiked ? '#dc2626' : 'none'} />
+                  {post.likes}
+                </button>
+                
+                <button
+                  onClick={() => handleComment(post)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '8px 16px',
+                    borderRadius: '20px',
+                    border: 'none',
+                    backgroundColor: '#f9fafb',
+                    color: '#6b7280',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: '600'
+                  }}
+                >
+                  <MessageCircle size={16} />
+                  {post.comments}
+                </button>
+                
+                <button
+                  onClick={() => handleShare(post)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '8px 16px',
+                    borderRadius: '20px',
+                    border: 'none',
+                    backgroundColor: '#f9fafb',
+                    color: '#6b7280',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: '600'
+                  }}
+                >
+                  <Share2 size={16} />
+                  {post.shares}
+                </button>
               </div>
             </div>
-          </div>
+          ))}
         </div>
-      )}
+
+        {/* 底部加載更多 */}
+        <div style={{ textAlign: 'center', paddingBottom: '32px' }}>
+          <button style={{
+            padding: '12px 24px',
+            borderRadius: '20px',
+            border: '1px solid #dc2626',
+            backgroundColor: '#ffffff',
+            color: '#dc2626',
+            fontSize: '14px',
+            fontWeight: '600',
+            cursor: 'pointer'
+          }}>
+            加載更多動態
+          </button>
+        </div>
+      </div>
+
+      {/* 創建動態彈窗 */}
+      {showCreateModal && <CreatePostModal />}
     </div>
   );
 };

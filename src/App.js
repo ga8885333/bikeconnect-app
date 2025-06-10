@@ -26,7 +26,7 @@ function AppContent() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-20 h-20 bg-bike-500 rounded-2xl shadow-lg flex items-center justify-center mx-auto mb-4 pulse-bike">
+          <div className="w-20 h-20 bg-primary-500 rounded-2xl shadow-lg flex items-center justify-center mx-auto mb-4 animate-pulse">
             <span className="text-3xl">🏍️</span>
           </div>
           <p className="text-gray-600">載入中...</p>

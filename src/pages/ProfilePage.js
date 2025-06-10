@@ -1,896 +1,860 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { 
-  Settings, 
-  Edit3, 
-  Wrench, 
+  Camera, 
+  MapPin, 
   Calendar, 
-  Award, 
-  Crown, 
-  ChevronRight,
-  Bell,
-  Shield,
-  HelpCircle,
-  LogOut,
-  Car,
-  Clock,
-  AlertTriangle,
-  Camera,
-  Upload,
-  User,
+  Edit3,
   Plus,
-  Trash2,
-  Eye,
-  X
+  X,
+  Heart,
+  Bike,
+  Trophy,
+  Target,
+  Users,
+  User,
+  Settings,
+  Award,
+  TrendingUp,
+  Clock,
+  Zap,
+  Share2,
+  ChevronRight,
+  Star
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
 
 const ProfilePage = () => {
-  const { user, logout, updateProfile } = useAuth();
-  const [activeTab, setActiveTab] = useState('profile'); // profile, gallery, vehicles, settings
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showVehicleModal, setShowVehicleModal] = useState(false);
-  const [showPhotoModal, setShowPhotoModal] = useState(false);
+  const { user, updateUser } = useAuth();
+  const [isEditing, setIsEditing] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState(null);
-  const fileInputRef = useRef(null);
-  const galleryInputRef = useRef(null);
-  const [previewImage, setPreviewImage] = useState(null);
-  const [editData, setEditData] = useState({
-    name: user?.name || '',
-    phone: user?.phone || '',
-    bio: user?.bio || '熱愛騎車的自由靈魂，享受每一段旅程的風景與自由。',
-    avatar: user?.avatar || null
-  });
-  
-  // 個人相簿狀態
-  const [gallery, setGallery] = useState([
+  const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
+  const [galleryPhotos, setGalleryPhotos] = useState([
     {
-      id: '1',
+      id: 1,
       url: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400',
-      caption: '我的愛車 Yamaha R1',
-      type: 'bike',
-      createdAt: '2024-01-15'
+      caption: '週末河濱騎行',
+      likes: 12,
+      timestamp: '2天前'
     },
     {
-      id: '2', 
+      id: 2,
       url: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=400',
-      caption: '山路騎行的美景',
-      type: 'scenery',
-      createdAt: '2024-01-10'
+      caption: '山區挑戰路線',
+      likes: 8,
+      timestamp: '1週前'
+    },
+    {
+      id: 3,
+      url: 'https://images.unsplash.com/photo-1571068316344-75bc76f77890?w=400',
+      caption: '新車開箱',
+      likes: 25,
+      timestamp: '2週前'
+    },
+    {
+      id: 4,
+      url: 'https://images.unsplash.com/photo-1544191696-15693072beb0?w=400',
+      caption: '城市夜騎',
+      likes: 15,
+      timestamp: '3週前'
+    }
+  ]);
+
+  const [editedUser, setEditedUser] = useState({
+    name: user?.name || '',
+    bio: user?.bio || '',
+    location: user?.location || ''
+  });
+
+  const [achievements] = useState([
+    {
+      id: '1',
+      title: '百公里挑戰者',
+      description: '單次騎行超過100公里',
+      icon: '🏆',
+      date: '2023-12-01',
+      type: 'distance'
+    },
+    {
+      id: '2',
+      title: '早起鳥兒',
+      description: '凌晨5點前開始騎行',
+      icon: '🌅',
+      date: '2023-11-15',
+      type: 'time'
     },
     {
       id: '3',
-      url: 'https://images.unsplash.com/photo-1534787238916-9ba6764efd4f?w=400',
-      caption: '和車友們的聚會',
-      type: 'social',
-      createdAt: '2024-01-05'
+      title: '社交達人',
+      description: '參加超過20場群組活動',
+      icon: '👥',
+      date: '2023-10-30',
+      type: 'social'
+    },
+    {
+      id: '4',
+      title: '攝影師',
+      description: '分享超過50張騎行照片',
+      icon: '📸',
+      date: '2023-10-15',
+      type: 'content'
     }
   ]);
 
-  const [vehicles, setVehicles] = useState([
+  const [recentRides] = useState([
     {
       id: '1',
-      brand: 'Yamaha',
-      model: 'R1',
-      year: '2023',
-      plateNumber: 'ABC-1234',
-      lastMaintenance: '2024-01-01',
-      nextMaintenance: '2024-04-01',
-      mileage: 15500,
-      maintenanceCost: 8500,
-      inspectionDate: '2024-12-31'
+      title: '陽明山晨騎',
+      distance: '28.5km',
+      time: '1小時45分',
+      date: '2天前',
+      photos: 3,
+      likes: 24
+    },
+    {
+      id: '2',
+      title: '淡水河濱夜騎',
+      distance: '15.2km',
+      time: '52分鐘',
+      date: '5天前',
+      photos: 2,
+      likes: 18
+    },
+    {
+      id: '3',
+      title: '新店溪畔悠騎',
+      distance: '22.8km',
+      time: '1小時12分',
+      date: '1週前',
+      photos: 4,
+      likes: 31
     }
   ]);
-  const [newVehicle, setNewVehicle] = useState({
-    brand: '',
-    model: '',
-    year: '',
-    plateNumber: '',
-    mileage: 0
-  });
 
-  const handleProfileUpdate = (e) => {
-    e.preventDefault();
-    updateProfile(editData);
-    setShowEditModal(false);
-    setPreviewImage(null);
-    toast.success('個人資料更新成功！');
-  };
+  const [activeTab, setActiveTab] = useState('overview');
+  const [showEditProfile, setShowEditProfile] = useState(false);
 
-  // 處理頭像上傳
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) { // 5MB 限制
-        toast.error('圖片大小不能超過 5MB');
-        return;
-      }
-      
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const imageUrl = e.target.result;
-        setPreviewImage(imageUrl);
-        setEditData(prev => ({ ...prev, avatar: imageUrl }));
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  // 處理相簿照片上傳
-  const handleGalleryUpload = (e) => {
-    const files = Array.from(e.target.files);
+  const handlePhotoUpload = (event) => {
+    const files = Array.from(event.target.files);
     
     files.forEach(file => {
       if (file.size > 5 * 1024 * 1024) {
-        toast.error(`圖片 ${file.name} 大小超過 5MB`);
+        toast.error('圖片大小不能超過5MB');
         return;
       }
-      
+
       const reader = new FileReader();
       reader.onload = (e) => {
         const newPhoto = {
-          id: Date.now().toString() + Math.random(),
+          id: Date.now() + Math.random(),
           url: e.target.result,
           caption: '',
-          type: 'other',
-          createdAt: new Date().toISOString().split('T')[0]
+          likes: 0,
+          timestamp: '剛剛'
         };
-        
-        setGallery(prev => [newPhoto, ...prev]);
+        setGalleryPhotos(prev => [newPhoto, ...prev]);
+        toast.success('照片上傳成功！');
       };
       reader.readAsDataURL(file);
     });
-    
-    toast.success('照片上傳成功！');
   };
 
-  // 刪除照片
-  const deletePhoto = (photoId) => {
-    setGallery(prev => prev.filter(photo => photo.id !== photoId));
+  const handleDeletePhoto = (photoId) => {
+    setGalleryPhotos(prev => prev.filter(photo => photo.id !== photoId));
+    setIsPhotoModalOpen(false);
     toast.success('照片已刪除');
   };
 
-  // 更新照片說明
-  const updatePhotoCaption = (photoId, caption) => {
-    setGallery(prev => prev.map(photo => 
-      photo.id === photoId ? { ...photo, caption } : photo
-    ));
+  const handleSaveProfile = () => {
+    updateUser(editedUser);
+    setIsEditing(false);
+    toast.success('個人資料已更新！');
   };
 
-  // 觸發檔案選擇
-  const triggerFileUpload = () => {
-    fileInputRef.current?.click();
+  const handleEditProfile = () => {
+    setShowEditProfile(true);
   };
 
-  const triggerGalleryUpload = () => {
-    galleryInputRef.current?.click();
+  const handleFollow = () => {
+    toast.success('功能開發中', {
+      style: { 
+        background: '#dc2626', 
+        color: '#ffffff',
+        fontWeight: '600'
+      }
+    });
   };
 
-  const handleAddVehicle = (e) => {
-    e.preventDefault();
-    const vehicle = {
-      id: Date.now().toString(),
-      ...newVehicle,
-      lastMaintenance: new Date().toISOString().split('T')[0],
-      nextMaintenance: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      maintenanceCost: 0,
-      inspectionDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-    };
-    
-    setVehicles([...vehicles, vehicle]);
-    setShowVehicleModal(false);
-    setNewVehicle({ brand: '', model: '', year: '', plateNumber: '', mileage: 0 });
-    toast.success('車輛新增成功！');
+  const handleShare = () => {
+    toast.success('個人檔案已分享！', {
+      style: { 
+        background: '#dc2626', 
+        color: '#ffffff',
+        fontWeight: '600'
+      }
+    });
   };
 
-  const handleMaintenanceReminder = (vehicle) => {
-    const nextDate = new Date(vehicle.nextMaintenance);
-    const today = new Date();
-    const daysLeft = Math.ceil((nextDate - today) / (1000 * 60 * 60 * 24));
-    
-    if (daysLeft <= 7) {
-      toast.error(`${vehicle.brand} ${vehicle.model} 需要保養了！還有 ${daysLeft} 天`);
-    } else {
-      toast.success(`${vehicle.brand} ${vehicle.model} 下次保養還有 ${daysLeft} 天`);
-    }
-  };
-
-  const achievements = [
-    { id: '1', title: '新手上路', description: '完成第一次騎行', icon: '🏁', unlocked: true },
-    { id: '2', title: '百里騎士', description: '累計騎行100公里', icon: '🎯', unlocked: true },
-    { id: '3', title: '山路征服者', description: '完成5次山路騎行', icon: '⛰️', unlocked: true },
-    { id: '4', title: '社交達人', description: '參加10次揪團活動', icon: '👥', unlocked: false },
-    { id: '5', title: '攝影大師', description: '發布50張騎行照片', icon: '📸', unlocked: false },
-    { id: '6', title: '千里馬', description: '累計騎行1000公里', icon: '🏆', unlocked: false }
-  ];
-
-  const ProfileStats = () => (
-    <div className="grid grid-cols-3 gap-4 mb-6">
-      <div className="card text-center bg-gradient-to-br from-bike-50 to-bike-100">
-        <div className="text-3xl font-bold text-bike-600">{user?.stats?.totalDistance || 0}</div>
-        <div className="text-sm text-bike-600">總里程(km)</div>
-      </div>
-      <div className="card text-center bg-gradient-to-br from-green-50 to-green-100">
-        <div className="text-3xl font-bold text-green-600">{user?.stats?.totalRides || 0}</div>
-        <div className="text-sm text-green-600">騎行次數</div>
-      </div>
-      <div className="card text-center bg-gradient-to-br from-purple-50 to-purple-100">
-        <div className="text-3xl font-bold text-purple-600">{gallery.length}</div>
-        <div className="text-sm text-purple-600">相簿照片</div>
+  const EditProfileModal = () => (
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000,
+      padding: '20px'
+    }}>
+      <div style={{
+        backgroundColor: '#ffffff',
+        borderRadius: '20px',
+        padding: '24px',
+        width: '100%',
+        maxWidth: '400px',
+        maxHeight: '80vh',
+        overflowY: 'auto'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+          <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#111827', margin: 0 }}>編輯個人檔案</h3>
+          <button 
+            onClick={() => setShowEditProfile(false)}
+            style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '8px',
+              backgroundColor: '#f9fafb',
+              border: '1px solid #e5e7eb',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            ×
+          </button>
+        </div>
+        
+        <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+          <div style={{ position: 'relative', display: 'inline-block' }}>
+            <img
+              src={user?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150'}
+              alt="個人頭像"
+              style={{
+                width: '80px',
+                height: '80px',
+                borderRadius: '50%',
+                objectFit: 'cover',
+                border: '3px solid #dc2626'
+              }}
+            />
+            <button style={{
+              position: 'absolute',
+              bottom: '0',
+              right: '0',
+              width: '28px',
+              height: '28px',
+              borderRadius: '50%',
+              backgroundColor: '#dc2626',
+              border: '2px solid #ffffff',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <Camera size={14} style={{ color: '#ffffff' }} />
+            </button>
+          </div>
+        </div>
+        
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div>
+            <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#111827', marginBottom: '6px' }}>
+              姓名
+            </label>
+            <input
+              type="text"
+              defaultValue={editedUser.name}
+              onChange={(e) => setEditedUser(prev => ({ ...prev, name: e.target.value }))}
+              style={{
+                width: '100%',
+                padding: '12px',
+                border: '1px solid #e5e7eb',
+                borderRadius: '10px',
+                fontSize: '16px',
+                fontWeight: '500'
+              }}
+            />
+          </div>
+          
+          <div>
+            <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#111827', marginBottom: '6px' }}>
+              個人簡介
+            </label>
+            <textarea
+              defaultValue={editedUser.bio}
+              onChange={(e) => setEditedUser(prev => ({ ...prev, bio: e.target.value }))}
+              style={{
+                width: '100%',
+                padding: '12px',
+                border: '1px solid #e5e7eb',
+                borderRadius: '10px',
+                fontSize: '16px',
+                height: '80px',
+                resize: 'none',
+                fontFamily: 'inherit'
+              }}
+            />
+          </div>
+          
+          <div>
+            <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: '#111827', marginBottom: '6px' }}>
+              所在地區
+            </label>
+            <input
+              type="text"
+              defaultValue={editedUser.location}
+              onChange={(e) => setEditedUser(prev => ({ ...prev, location: e.target.value }))}
+              style={{
+                width: '100%',
+                padding: '12px',
+                border: '1px solid #e5e7eb',
+                borderRadius: '10px',
+                fontSize: '16px',
+                fontWeight: '500'
+              }}
+            />
+          </div>
+        </div>
+        
+        <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
+          <button 
+            onClick={() => setShowEditProfile(false)}
+            style={{
+              flex: 1,
+              padding: '12px',
+              borderRadius: '10px',
+              border: '1px solid #e5e7eb',
+              backgroundColor: '#f9fafb',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '600',
+              color: '#6b7280'
+            }}
+          >
+            取消
+          </button>
+          <button 
+            onClick={handleSaveProfile}
+            style={{
+              flex: 1,
+              padding: '12px',
+              borderRadius: '10px',
+              background: 'linear-gradient(135deg, #dc2626 0%, #ef4444 100%)',
+              color: '#ffffff',
+              border: 'none',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: '700'
+            }}
+          >
+            保存
+          </button>
+        </div>
       </div>
     </div>
   );
 
-  const ProfileTab = () => (
-    <div>
-      {/* 用戶信息 */}
-      <div className="card mb-6">
-        <div className="flex items-center space-x-4 mb-4">
-          <img
-            src={user?.avatar}
-            alt={user?.name}
-            className="w-20 h-20 rounded-full object-cover"
-          />
-          <div className="flex-1">
-            <div className="flex items-center space-x-2 mb-2">
-              <h2 className="text-2xl font-bold text-gray-800">{user?.name}</h2>
-              {user?.verified && (
-                <div className="w-6 h-6 bg-bike-500 rounded-full flex items-center justify-center">
-                  <span className="text-white text-xs">✓</span>
-                </div>
-              )}
-              {user?.premiumMember && (
-                <Crown size={20} className="text-yellow-500" />
-              )}
-            </div>
-            <p className="text-gray-600 mb-2">{editData.bio}</p>
-            <p className="text-sm text-gray-500">{user?.email}</p>
-          </div>
-          <button
-            onClick={() => setShowEditModal(true)}
-            className="p-2 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
-          >
-            <Edit3 size={18} />
-          </button>
-        </div>
-        
-        {!user?.premiumMember && (
-          <div className="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl p-4 text-white">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-semibold">升級為付費會員</h3>
-                <p className="text-sm opacity-90">解鎖更多功能和私訊權限</p>
+  const StatCard = ({ icon: Icon, value, label, color, bgColor }) => (
+    <div className={`${bgColor} p-4 rounded-xl`}>
+      <div className="text-center">
+        <Icon size={24} className={`${color} mx-auto mb-2`} />
+        <div className={`text-2xl font-bold ${color}`}>{value}</div>
+        <div className={`text-xs ${color} opacity-80`}>{label}</div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div style={{ 
+      minHeight: '100vh', 
+      backgroundColor: '#ffffff',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+    }}>
+      {/* 個人檔案頭部 */}
+      <div style={{
+        background: 'linear-gradient(135deg, #dc2626 0%, #ef4444 100%)',
+        padding: '20px',
+        marginBottom: '20px'
+      }}>
+        <div style={{ maxWidth: '400px', margin: '0 auto' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', gap: '16px', flex: 1 }}>
+              <div style={{ position: 'relative' }}>
+                <img
+                  src={user?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150'}
+                  alt="個人頭像"
+                  style={{
+                    width: '80px',
+                    height: '80px',
+                    borderRadius: '50%',
+                    objectFit: 'cover',
+                    border: '4px solid rgba(255, 255, 255, 0.3)'
+                  }}
+                />
+                {user?.verified && (
+                  <div style={{
+                    position: 'absolute',
+                    bottom: '2px',
+                    right: '2px',
+                    width: '24px',
+                    height: '24px',
+                    backgroundColor: '#ffffff',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    border: '2px solid #dc2626'
+                  }}>
+                    <span style={{ color: '#dc2626', fontSize: '12px', fontWeight: '700' }}>✓</span>
+                  </div>
+                )}
               </div>
-              <button className="bg-white text-orange-600 px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors">
-                升級
+              
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                  <h1 style={{ fontSize: '20px', fontWeight: '800', color: '#ffffff', margin: 0 }}>{user?.name || '騎行者'}</h1>
+                  <span style={{
+                    padding: '2px 8px',
+                    borderRadius: '12px',
+                    fontSize: '10px',
+                    fontWeight: '700',
+                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                    color: '#ffffff'
+                  }}>
+                    {user?.level || '騎行者'}
+                  </span>
+                </div>
+                <p style={{ fontSize: '14px', color: '#ffffff', margin: '0 0 8px 0', opacity: 0.8, fontWeight: '500' }}>
+                  {user?.username || '@bikerlee'}
+                </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <MapPin size={12} style={{ color: '#ffffff', opacity: 0.8 }} />
+                    <span style={{ fontSize: '12px', color: '#ffffff', opacity: 0.8, fontWeight: '500' }}>{user?.location || '台北市'}</span>
+                  </div>
+                  <span style={{ color: '#ffffff', opacity: 0.5 }}>•</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <Calendar size={12} style={{ color: '#ffffff', opacity: 0.8 }} />
+                    <span style={{ fontSize: '12px', color: '#ffffff', opacity: 0.8, fontWeight: '500' }}>
+                      {new Date(user?.joinDate || '2023-01-15').toLocaleDateString('zh-TW')} 加入
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                onClick={handleShare}
+                style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '10px',
+                  backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                <Share2 size={16} style={{ color: '#ffffff' }} />
+              </button>
+              <button
+                onClick={handleEditProfile}
+                style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '10px',
+                  backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                <Edit3 size={16} style={{ color: '#ffffff' }} />
+              </button>
+            </div>
+          </div>
+
+          {/* 個人簡介 */}
+          <p style={{ 
+            fontSize: '14px', 
+            color: '#ffffff', 
+            marginBottom: '20px', 
+            lineHeight: '1.5',
+            opacity: 0.9,
+            fontWeight: '500'
+          }}>
+            {user?.bio || '熱愛騎行的自由靈魂，喜歡探索城市的每個角落 🚴‍♂️'}
+          </p>
+
+          {/* 統計數據 */}
+          <div style={{
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            borderRadius: '16px',
+            padding: '20px',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: '20px'
+          }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '24px', fontWeight: '900', color: '#111827', marginBottom: '4px' }}>
+                {user?.stats?.totalDistance || '1,235'}
+              </div>
+              <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: '600' }}>總里程 (km)</div>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '24px', fontWeight: '900', color: '#111827', marginBottom: '4px' }}>
+                {user?.stats?.totalRides || '89'}
+              </div>
+              <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: '600' }}>騎行次數</div>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '24px', fontWeight: '900', color: '#111827', marginBottom: '4px' }}>
+                {user?.stats?.avgSpeed || '15.2'}
+              </div>
+              <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: '600' }}>平均時速</div>
+            </div>
+          </div>
+
+          {/* 社交統計 */}
+          <div style={{ display: 'flex', gap: '16px', marginTop: '16px' }}>
+            <div style={{
+              flex: 1,
+              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+              borderRadius: '12px',
+              padding: '12px 16px',
+              textAlign: 'center'
+            }}>
+              <div style={{ fontSize: '18px', fontWeight: '800', color: '#111827' }}>{user?.stats?.followers || '245'}</div>
+              <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: '600' }}>追蹤者</div>
+            </div>
+            <div style={{
+              flex: 1,
+              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+              borderRadius: '12px',
+              padding: '12px 16px',
+              textAlign: 'center'
+            }}>
+              <div style={{ fontSize: '18px', fontWeight: '800', color: '#111827' }}>{user?.stats?.following || '189'}</div>
+              <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: '600' }}>正在追蹤</div>
+            </div>
+            <div style={{
+              flex: 1,
+              backgroundColor: 'rgba(255, 255, 255, 0.95)',
+              borderRadius: '12px',
+              padding: '12px 16px',
+              textAlign: 'center'
+            }}>
+              <div style={{ fontSize: '18px', fontWeight: '800', color: '#111827' }}>{user?.stats?.achievements || '15'}</div>
+              <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: '600' }}>成就</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ maxWidth: '400px', margin: '0 auto', padding: '0 20px' }}>
+        {/* 標籤切換 */}
+        <div style={{ display: 'flex', marginBottom: '24px', backgroundColor: '#f9fafb', borderRadius: '12px', padding: '4px' }}>
+          {[
+            { key: 'overview', label: '總覽' },
+            { key: 'achievements', label: '成就' },
+            { key: 'rides', label: '騎行' }
+          ].map(tab => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              style={{
+                flex: 1,
+                padding: '10px',
+                borderRadius: '8px',
+                border: 'none',
+                backgroundColor: activeTab === tab.key ? '#ffffff' : 'transparent',
+                color: activeTab === tab.key ? '#dc2626' : '#6b7280',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                boxShadow: activeTab === tab.key ? '0 2px 4px rgba(0, 0, 0, 0.05)' : 'none'
+              }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* 內容區域 */}
+        {activeTab === 'overview' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            {/* 本月統計 */}
+            <div style={{
+              backgroundColor: '#ffffff',
+              borderRadius: '16px',
+              padding: '20px',
+              border: '1px solid #f3f4f6',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
+            }}>
+              <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#111827', marginBottom: '16px' }}>本月表現</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '20px', fontWeight: '800', color: '#dc2626' }}>156km</div>
+                  <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: '600' }}>本月騎行</div>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '20px', fontWeight: '800', color: '#dc2626' }}>12次</div>
+                  <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: '600' }}>騎行次數</div>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '20px', fontWeight: '800', color: '#dc2626' }}>18.2</div>
+                  <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: '600' }}>平均速度</div>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '20px', fontWeight: '800', color: '#dc2626' }}>2,850</div>
+                  <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: '600' }}>燃燒卡路里</div>
+                </div>
+              </div>
+            </div>
+
+            {/* 最新成就 */}
+            <div style={{
+              backgroundColor: '#ffffff',
+              borderRadius: '16px',
+              padding: '20px',
+              border: '1px solid #f3f4f6',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#111827', margin: 0 }}>最新成就</h3>
+                <button 
+                  onClick={() => setActiveTab('achievements')}
+                  style={{
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    color: '#dc2626',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
+                >
+                  查看全部 <ChevronRight size={12} />
+                </button>
+              </div>
+              <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '4px' }}>
+                {achievements.slice(0, 3).map(achievement => (
+                  <div key={achievement.id} style={{
+                    minWidth: '120px',
+                    backgroundColor: '#fee2e2',
+                    borderRadius: '12px',
+                    padding: '16px 12px',
+                    textAlign: 'center'
+                  }}>
+                    <div style={{ fontSize: '24px', marginBottom: '8px' }}>{achievement.icon}</div>
+                    <div style={{ fontSize: '12px', fontWeight: '700', color: '#dc2626', marginBottom: '4px' }}>
+                      {achievement.title}
+                    </div>
+                    <div style={{ fontSize: '10px', color: '#6b7280', fontWeight: '500' }}>
+                      {achievement.date}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'achievements' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#111827', marginBottom: '8px' }}>
+              成就收藏 ({achievements.length})
+            </h3>
+            {achievements.map(achievement => (
+              <div key={achievement.id} style={{
+                backgroundColor: '#ffffff',
+                borderRadius: '16px',
+                padding: '20px',
+                border: '1px solid #f3f4f6',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '16px'
+              }}>
+                <div style={{
+                  width: '48px',
+                  height: '48px',
+                  borderRadius: '12px',
+                  backgroundColor: '#fee2e2',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '20px'
+                }}>
+                  {achievement.icon}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <h4 style={{ fontSize: '16px', fontWeight: '700', color: '#111827', margin: '0 0 4px 0' }}>
+                    {achievement.title}
+                  </h4>
+                  <p style={{ fontSize: '14px', color: '#6b7280', margin: '0 0 6px 0', fontWeight: '500' }}>
+                    {achievement.description}
+                  </p>
+                  <div style={{ fontSize: '12px', color: '#9ca3af', fontWeight: '600' }}>
+                    獲得於 {achievement.date}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {activeTab === 'rides' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#111827', marginBottom: '8px' }}>
+              最近騎行
+            </h3>
+            {recentRides.map(ride => (
+              <div key={ride.id} style={{
+                backgroundColor: '#ffffff',
+                borderRadius: '16px',
+                padding: '20px',
+                border: '1px solid #f3f4f6',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                  <div>
+                    <h4 style={{ fontSize: '16px', fontWeight: '700', color: '#111827', margin: '0 0 4px 0' }}>
+                      {ride.title}
+                    </h4>
+                    <div style={{ fontSize: '12px', color: '#9ca3af', fontWeight: '600' }}>{ride.date}</div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <Camera size={12} style={{ color: '#6b7280' }} />
+                      <span style={{ fontSize: '12px', color: '#6b7280', fontWeight: '600' }}>{ride.photos}</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <Heart size={12} style={{ color: '#6b7280' }} />
+                      <span style={{ fontSize: '12px', color: '#6b7280', fontWeight: '600' }}>{ride.likes}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div style={{ display: 'flex', gap: '16px' }}>
+                  <div style={{
+                    backgroundColor: '#fee2e2',
+                    borderRadius: '10px',
+                    padding: '12px',
+                    flex: 1,
+                    textAlign: 'center'
+                  }}>
+                    <div style={{ fontSize: '16px', fontWeight: '800', color: '#111827' }}>{ride.distance}</div>
+                    <div style={{ fontSize: '11px', color: '#6b7280', fontWeight: '600' }}>距離</div>
+                  </div>
+                  <div style={{
+                    backgroundColor: '#fee2e2',
+                    borderRadius: '10px',
+                    padding: '12px',
+                    flex: 1,
+                    textAlign: 'center'
+                  }}>
+                    <div style={{ fontSize: '16px', fontWeight: '800', color: '#111827' }}>{ride.time}</div>
+                    <div style={{ fontSize: '11px', color: '#6b7280', fontWeight: '600' }}>時間</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+            
+            <div style={{ textAlign: 'center', paddingTop: '16px' }}>
+              <button style={{
+                padding: '12px 24px',
+                borderRadius: '20px',
+                border: '1px solid #dc2626',
+                backgroundColor: '#ffffff',
+                color: '#dc2626',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer'
+              }}>
+                查看更多騎行記錄
               </button>
             </div>
           </div>
         )}
       </div>
 
-      <ProfileStats />
+      {/* 編輯個人檔案彈窗 */}
+      {showEditProfile && <EditProfileModal />}
 
-      {/* 成就系統 */}
-      <div className="card mb-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-          <Award size={20} className="mr-2" />
-          成就徽章
-        </h3>
-        <div className="grid grid-cols-3 gap-3">
-          {achievements.map(achievement => (
-            <div
-              key={achievement.id}
-              className={`text-center p-3 rounded-xl border-2 transition-colors ${
-                achievement.unlocked
-                  ? 'border-yellow-300 bg-yellow-50'
-                  : 'border-gray-200 bg-gray-50 opacity-60'
-              }`}
-            >
-              <div className="text-2xl mb-2">{achievement.icon}</div>
-              <div className="text-xs font-medium text-gray-800">{achievement.title}</div>
-              <div className="text-xs text-gray-600 mt-1">{achievement.description}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* 快速操作 */}
-      <div className="card">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">快速操作</h3>
-        <div className="space-y-3">
-          <button 
-            onClick={() => setActiveTab('gallery')}
-            className="w-full flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
-          >
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-purple-500 text-white rounded-lg">
-                <Camera size={18} />
-              </div>
-              <span className="font-medium">個人相簿</span>
-            </div>
-            <ChevronRight size={20} className="text-gray-400" />
-          </button>
-          
-          <button className="w-full flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-bike-500 text-white rounded-lg">
-                <Calendar size={18} />
-              </div>
-              <span className="font-medium">我的活動</span>
-            </div>
-            <ChevronRight size={20} className="text-gray-400" />
-          </button>
-          
-          <button className="w-full flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-green-500 text-white rounded-lg">
-                <Award size={18} />
-              </div>
-              <span className="font-medium">騎行記錄</span>
-            </div>
-            <ChevronRight size={20} className="text-gray-400" />
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-
-  // 新增個人相簿標籤頁
-  const GalleryTab = () => (
-    <div>
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold text-gray-800">個人相簿</h2>
-        <button
-          onClick={triggerGalleryUpload}
-          className="btn-primary py-2 px-4 text-sm flex items-center"
-        >
-          <Plus size={16} className="mr-2" />
-          新增照片
-        </button>
-      </div>
-
-      {gallery.length === 0 ? (
-        <div className="card text-center py-12">
-          <div className="text-6xl mb-4">📷</div>
-          <h3 className="text-lg font-semibold text-gray-700 mb-2">還沒有照片</h3>
-          <p className="text-gray-500 mb-6">上傳您的騎行照片和生活回憶</p>
-          <button
-            onClick={triggerGalleryUpload}
-            className="btn-primary"
-          >
-            <Plus size={18} className="mr-2" />
-            上傳第一張照片
-          </button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 gap-4">
-          {gallery.map(photo => (
-            <div key={photo.id} className="relative group">
-              <div className="aspect-square bg-gray-100 rounded-xl overflow-hidden">
-                <img
-                  src={photo.url}
-                  alt={photo.caption}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                />
-              </div>
-              
-              {/* 照片覆蓋層 */}
-              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-xl flex items-center justify-center space-x-3">
-                <button
-                  onClick={() => {
-                    setSelectedPhoto(photo);
-                    setShowPhotoModal(true);
-                  }}
-                  className="p-2 bg-white/20 rounded-lg text-white hover:bg-white/30 transition-colors"
-                >
-                  <Eye size={18} />
-                </button>
-                <button
-                  onClick={() => deletePhoto(photo.id)}
-                  className="p-2 bg-red-500/80 rounded-lg text-white hover:bg-red-500 transition-colors"
-                >
-                  <Trash2 size={18} />
-                </button>
-              </div>
-              
-              {/* 照片標題 */}
-              {photo.caption && (
-                <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white p-2 rounded-b-xl">
-                  <p className="text-sm truncate">{photo.caption}</p>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-      
-      <input
-        ref={galleryInputRef}
-        type="file"
-        accept="image/*"
-        multiple
-        onChange={handleGalleryUpload}
-        className="hidden"
-      />
-    </div>
-  );
-
-  const VehiclesTab = () => (
-    <div>
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold text-gray-800">我的車輛</h2>
-        <button
-          onClick={() => setShowVehicleModal(true)}
-          className="btn-primary py-2 px-4 text-sm"
-        >
-          新增車輛
-        </button>
-      </div>
-
-      <div className="space-y-4">
-        {vehicles.map(vehicle => {
-          const nextMaintenance = new Date(vehicle.nextMaintenance);
-          const today = new Date();
-          const daysLeft = Math.ceil((nextMaintenance - today) / (1000 * 60 * 60 * 24));
-          const needsMaintenance = daysLeft <= 30;
-
-          return (
-            <div key={vehicle.id} className="card">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center space-x-3">
-                  <div className="p-3 bg-bike-100 text-bike-600 rounded-xl">
-                    <Car size={24} />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-800">
-                      {vehicle.brand} {vehicle.model}
-                    </h3>
-                    <p className="text-sm text-gray-600">{vehicle.year} | {vehicle.plateNumber}</p>
-                  </div>
-                </div>
-                {needsMaintenance && (
-                  <div className="flex items-center space-x-1 text-orange-500">
-                    <AlertTriangle size={16} />
-                    <span className="text-xs">需保養</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 mb-4">
-                <div>
-                  <div className="text-sm text-gray-600">里程數</div>
-                  <div className="font-semibold">{vehicle.mileage.toLocaleString()} km</div>
-                </div>
-                <div>
-                  <div className="text-sm text-gray-600">保養費用</div>
-                  <div className="font-semibold">NT$ {vehicle.maintenanceCost.toLocaleString()}</div>
-                </div>
-                <div>
-                  <div className="text-sm text-gray-600">上次保養</div>
-                  <div className="font-semibold">{vehicle.lastMaintenance}</div>
-                </div>
-                <div>
-                  <div className="text-sm text-gray-600">下次保養</div>
-                  <div className={`font-semibold ${needsMaintenance ? 'text-orange-500' : ''}`}>
-                    {vehicle.nextMaintenance}
-                  </div>
-                </div>
-              </div>
-
-              <div className={`rounded-xl p-3 mb-4 ${needsMaintenance ? 'bg-orange-50 border border-orange-200' : 'bg-green-50 border border-green-200'}`}>
-                <div className="flex items-center space-x-2">
-                  <Clock size={16} className={needsMaintenance ? 'text-orange-500' : 'text-green-500'} />
-                  <span className={`text-sm font-medium ${needsMaintenance ? 'text-orange-700' : 'text-green-700'}`}>
-                    {needsMaintenance ? `需要保養 (還有 ${daysLeft} 天)` : `保養正常 (還有 ${daysLeft} 天)`}
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex space-x-3">
-                <button
-                  onClick={() => handleMaintenanceReminder(vehicle)}
-                  className="flex-1 btn-secondary py-2 text-sm"
-                >
-                  <Wrench size={16} className="mr-2" />
-                  保養提醒
-                </button>
-                <button className="flex-1 btn-primary py-2 text-sm">
-                  <Edit3 size={16} className="mr-2" />
-                  編輯資料
-                </button>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-
-  const SettingsTab = () => (
-    <div className="space-y-4">
-      <div className="card">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">通知設定</h3>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <Bell size={18} className="text-gray-600" />
-              <span>活動提醒</span>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" className="sr-only peer" defaultChecked />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-bike-500"></div>
-            </label>
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <Wrench size={18} className="text-gray-600" />
-              <span>保養提醒</span>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" className="sr-only peer" defaultChecked />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-bike-500"></div>
-            </label>
-          </div>
-        </div>
-      </div>
-
-      <div className="card">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">隱私設定</h3>
-        <div className="space-y-3">
-          <button className="w-full flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
-            <div className="flex items-center space-x-3">
-              <Shield size={18} className="text-gray-600" />
-              <span>隱私權設定</span>
-            </div>
-            <ChevronRight size={20} className="text-gray-400" />
-          </button>
-          
-          <button className="w-full flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
-            <div className="flex items-center space-x-3">
-              <HelpCircle size={18} className="text-gray-600" />
-              <span>幫助中心</span>
-            </div>
-            <ChevronRight size={20} className="text-gray-400" />
-          </button>
-        </div>
-      </div>
-
-      <div className="card">
-        <button
-          onClick={logout}
-          className="w-full flex items-center justify-center space-x-3 p-3 text-red-600 hover:bg-red-50 rounded-xl transition-colors"
-        >
-          <LogOut size={18} />
-          <span className="font-medium">登出</span>
-        </button>
-      </div>
-    </div>
-  );
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* 頂部標題 */}
-      <div className="bg-white border-b border-gray-200 px-4 py-4 sticky top-0 z-10">
-        <h1 className="text-2xl font-bold text-gray-800">個人資料</h1>
-        
-        {/* 標籤切換 */}
-        <div className="flex space-x-1 mt-4 overflow-x-auto">
-          {[
-            { key: 'profile', label: '資料', icon: User },
-            { key: 'gallery', label: '相簿', icon: Camera },
-            { key: 'vehicles', label: '車輛', icon: Car },
-            { key: 'settings', label: '設定', icon: Settings }
-          ].map(tab => {
-            const IconComponent = tab.icon;
-            return (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-xl font-medium transition-colors flex-shrink-0 ${
-                  activeTab === tab.key
-                    ? 'bg-bike-500 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                <IconComponent size={16} />
-                <span>{tab.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* 內容區域 */}
-      <div className="px-4 py-6">
-        {activeTab === 'profile' && <ProfileTab />}
-        {activeTab === 'gallery' && <GalleryTab />}
-        {activeTab === 'vehicles' && <VehiclesTab />}
-        {activeTab === 'settings' && <SettingsTab />}
-      </div>
-
-      {/* 編輯資料模態框 */}
-      {showEditModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl w-full max-w-md max-h-[80vh] overflow-y-auto">
-            <div className="p-6">
-              <h2 className="text-xl font-bold mb-6">編輯個人資料</h2>
-              
-              <form onSubmit={handleProfileUpdate} className="space-y-6">
-                {/* 頭像上傳 */}
-                <div className="text-center">
-                  <div className="relative inline-block">
-                    <img
-                      src={previewImage || editData.avatar || user?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150'}
-                      alt="頭像"
-                      className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg"
-                    />
-                    <button
-                      type="button"
-                      onClick={triggerFileUpload}
-                      className="absolute bottom-0 right-0 p-2 bg-bike-500 text-white rounded-full shadow-lg hover:bg-bike-600 transition-colors"
-                    >
-                      <Camera size={16} />
-                    </button>
-                  </div>
-                  <p className="text-sm text-gray-500 mt-2">點擊相機圖標更換頭像</p>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                  />
-                </div>
-
-                {/* 基本資料 */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    <User size={16} className="inline mr-2" />
-                    姓名
-                  </label>
-                  <input
-                    type="text"
-                    value={editData.name}
-                    onChange={(e) => setEditData({...editData, name: e.target.value})}
-                    className="input-field"
-                    placeholder="請輸入您的姓名"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    📱 手機號碼
-                  </label>
-                  <input
-                    type="tel"
-                    value={editData.phone}
-                    onChange={(e) => setEditData({...editData, phone: e.target.value})}
-                    className="input-field"
-                    placeholder="0912-345-678"
-                    required
-                  />
-                </div>
-
-                {/* 自我介紹 */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    💭 自我介紹
-                  </label>
-                  <textarea
-                    value={editData.bio}
-                    onChange={(e) => setEditData({...editData, bio: e.target.value})}
-                    className="input-field h-24 resize-none"
-                    placeholder="分享您的騎車故事、興趣愛好或想對其他騎士說的話..."
-                    maxLength={200}
-                  />
-                  <div className="text-right text-xs text-gray-500 mt-1">
-                    {editData.bio.length}/200
-                  </div>
-                </div>
-
-                {/* 預設自我介紹範本 */}
-                <div>
-                  <p className="text-sm font-medium text-gray-700 mb-2">💡 快速範本</p>
-                  <div className="grid grid-cols-1 gap-2">
-                    {[
-                      "熱愛騎車的自由靈魂，享受每一段旅程的風景與自由。🏍️",
-                      "重機愛好者，喜歡山路飆車和結交車友。安全至上！",
-                      "週末騎士，平日上班族。騎車是我的紓壓方式。",
-                      "機車維修技師，樂於分享保養知識和騎行經驗。🔧"
-                    ].map((template, index) => (
-                      <button
-                        key={index}
-                        type="button"
-                        onClick={() => setEditData({...editData, bio: template})}
-                        className="text-left p-2 text-xs bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
-                      >
-                        {template}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="flex space-x-3 pt-4 border-t border-gray-200">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowEditModal(false);
-                      setPreviewImage(null);
-                      setEditData({
-                        name: user?.name || '',
-                        phone: user?.phone || '',
-                        bio: user?.bio || '熱愛騎車的自由靈魂，享受每一段旅程的風景與自由。',
-                        avatar: user?.avatar || null
-                      });
-                    }}
-                    className="flex-1 btn-secondary py-3"
-                  >
-                    取消
-                  </button>
-                  <button
-                    type="submit"
-                    className="flex-1 btn-primary py-3 flex items-center justify-center"
-                  >
-                    <Upload size={16} className="mr-2" />
-                    保存修改
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 新增車輛模態框 */}
-      {showVehicleModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl w-full max-w-md">
-            <div className="p-6">
-              <h2 className="text-xl font-bold mb-6">新增車輛</h2>
-              
-              <form onSubmit={handleAddVehicle} className="space-y-4">
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">品牌</label>
-                    <input
-                      type="text"
-                      value={newVehicle.brand}
-                      onChange={(e) => setNewVehicle({...newVehicle, brand: e.target.value})}
-                      className="input-field"
-                      placeholder="Yamaha"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">型號</label>
-                    <input
-                      type="text"
-                      value={newVehicle.model}
-                      onChange={(e) => setNewVehicle({...newVehicle, model: e.target.value})}
-                      className="input-field"
-                      placeholder="R1"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">年份</label>
-                    <input
-                      type="text"
-                      value={newVehicle.year}
-                      onChange={(e) => setNewVehicle({...newVehicle, year: e.target.value})}
-                      className="input-field"
-                      placeholder="2023"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">車牌號碼</label>
-                    <input
-                      type="text"
-                      value={newVehicle.plateNumber}
-                      onChange={(e) => setNewVehicle({...newVehicle, plateNumber: e.target.value})}
-                      className="input-field"
-                      placeholder="ABC-1234"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">目前里程 (km)</label>
-                  <input
-                    type="number"
-                    value={newVehicle.mileage}
-                    onChange={(e) => setNewVehicle({...newVehicle, mileage: parseInt(e.target.value)})}
-                    className="input-field"
-                    placeholder="15000"
-                    required
-                  />
-                </div>
-
-                <div className="flex space-x-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => setShowVehicleModal(false)}
-                    className="flex-1 btn-secondary py-3"
-                  >
-                    取消
-                  </button>
-                  <button
-                    type="submit"
-                    className="flex-1 btn-primary py-3"
-                  >
-                    新增
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 照片預覽模態框 */}
-      {showPhotoModal && selectedPhoto && (
-        <div className="fixed inset-0 bg-black/90 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl w-full max-w-md max-h-[80vh] overflow-hidden">
+      {/* 照片詳情彈窗 */}
+      {isPhotoModalOpen && selectedPhoto && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-hidden">
             <div className="relative">
               <img
                 src={selectedPhoto.url}
                 alt={selectedPhoto.caption}
-                className="w-full h-80 object-cover"
+                className="w-full h-64 object-cover"
               />
               <button
-                onClick={() => setShowPhotoModal(false)}
-                className="absolute top-4 right-4 p-2 bg-black/50 text-white rounded-full hover:bg-black/70 transition-colors"
+                onClick={() => setIsPhotoModalOpen(false)}
+                className="absolute top-4 right-4 w-8 h-8 bg-black/50 text-white rounded-full flex items-center justify-center"
               >
-                <X size={18} />
+                <X size={16} />
               </button>
             </div>
             
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
+            <div className="p-4">
+              <div className="flex items-center justify-between mb-3">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-800">照片詳情</h3>
-                  <p className="text-sm text-gray-500">上傳於 {selectedPhoto.createdAt}</p>
+                  <h3 className="font-semibold text-gray-800">{selectedPhoto.caption || '無標題'}</h3>
+                  <p className="text-sm text-gray-500">{selectedPhoto.timestamp}</p>
+                </div>
+                <div className="flex items-center space-x-2 text-gray-500">
+                  <Heart size={16} />
+                  <span>{selectedPhoto.likes}</span>
                 </div>
               </div>
               
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">照片描述</label>
-                <input
-                  type="text"
-                  value={selectedPhoto.caption}
-                  onChange={(e) => {
-                    updatePhotoCaption(selectedPhoto.id, e.target.value);
-                    setSelectedPhoto({...selectedPhoto, caption: e.target.value});
-                  }}
-                  className="input-field"
-                  placeholder="為這張照片新增說明..."
-                />
-              </div>
-              
-              <div className="flex space-x-3">
+              <div className="flex space-x-2">
                 <button
                   onClick={() => {
-                    deletePhoto(selectedPhoto.id);
-                    setShowPhotoModal(false);
+                    const newCaption = prompt('編輯照片說明', selectedPhoto.caption);
+                    if (newCaption !== null) {
+                      setGalleryPhotos(prev => prev.map(p => 
+                        p.id === selectedPhoto.id ? { ...p, caption: newCaption } : p
+                      ));
+                      setSelectedPhoto({ ...selectedPhoto, caption: newCaption });
+                      toast.success('照片說明已更新');
+                    }
                   }}
-                  className="flex-1 bg-red-500 text-white py-3 rounded-xl font-medium hover:bg-red-600 transition-colors flex items-center justify-center"
+                  className="flex-1 py-2 bg-primary-50 text-primary-600 rounded-lg font-medium hover:bg-primary-100 transition-colors"
                 >
-                  <Trash2 size={16} className="mr-2" />
-                  刪除照片
+                  編輯說明
                 </button>
                 <button
-                  onClick={() => setShowPhotoModal(false)}
-                  className="flex-1 btn-secondary py-3"
+                  onClick={() => handleDeletePhoto(selectedPhoto.id)}
+                  className="flex-1 py-2 bg-red-50 text-red-600 rounded-lg font-medium hover:bg-red-100 transition-colors"
                 >
-                  關閉
+                  刪除照片
                 </button>
               </div>
             </div>

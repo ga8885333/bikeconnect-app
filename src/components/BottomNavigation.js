@@ -12,7 +12,7 @@ const BottomNavigation = () => {
       path: '/',
       icon: Home,
       label: '首頁',
-      color: 'text-bike-500'
+      color: 'text-primary-500'
     },
     {
       id: 'groups',
@@ -49,7 +49,7 @@ const BottomNavigation = () => {
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2 z-50">
+    <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-gray-200 px-4 py-2 z-50">
       <div className="flex justify-around items-center max-w-md mx-auto">
         {navItems.map((item) => {
           const IconComponent = item.icon;
@@ -61,8 +61,8 @@ const BottomNavigation = () => {
               onClick={() => handleNavClick(item.path)}
               className={`flex flex-col items-center justify-center py-2 px-3 rounded-xl transition-all duration-300 ${
                 isActive
-                  ? `${item.color} bg-gray-50 scale-110`
-                  : 'text-gray-400 hover:text-gray-600'
+                  ? 'bg-gradient-warm text-white shadow-warm scale-105'
+                  : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
               }`}
             >
               <IconComponent 
@@ -82,7 +82,7 @@ const BottomNavigation = () => {
               {/* 活動指示器 */}
               {isActive && (
                 <div 
-                  className={`absolute -top-1 w-1 h-1 rounded-full ${item.color.replace('text-', 'bg-')} animate-pulse`}
+                  className="absolute -top-1 w-1 h-1 rounded-full bg-primary-400 animate-pulse"
                 />
               )}
             </button>
@@ -90,8 +90,8 @@ const BottomNavigation = () => {
         })}
       </div>
       
-      {/* 騎士風格裝飾線 */}
-      <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-gradient-to-r from-bike-400 to-bike-600 rounded-full" />
+      {/* 橙黃色裝飾線 */}
+      <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-gradient-to-r from-primary-400 to-primary-600 rounded-full" />
     </div>
   );
 };

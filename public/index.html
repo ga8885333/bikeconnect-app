@@ -22,36 +22,6 @@
       crossorigin=""/>
     
     <title>騎車交友 - BikeConnect</title>
-    
-    <!-- Google Maps API 載入腳本 -->
-    <script>
-      // Google Maps API 載入狀態管理
-      window.googleMapsApiLoaded = false;
-      window.googleMapsApiError = false;
-      
-      function initGoogleMaps() {
-        window.googleMapsApiLoaded = true;
-        console.log('Google Maps API 載入完成');
-        // 觸發自定義事件通知React組件
-        window.dispatchEvent(new Event('googleMapsLoaded'));
-      }
-      
-      function handleGoogleMapsError() {
-        window.googleMapsApiError = true;
-        console.error('Google Maps API 載入失敗');
-        // 觸發自定義事件通知React組件
-        window.dispatchEvent(new Event('googleMapsError'));
-      }
-    </script>
-    
-    <!-- Google Maps API -->
-    <!-- 注意：請將 YOUR_GOOGLE_MAPS_API_KEY 替換為您的實際 API Key -->
-    <script 
-      async 
-      defer 
-      src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=places&callback=initGoogleMaps"
-      onerror="handleGoogleMapsError()">
-    </script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>

@@ -1,114 +1,138 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
   MapPin, 
-  AlertCircle,
-  Locate,
-  X,
-  Info,
+  Users,
   Navigation,
-  Phone,
   Search,
   Filter,
-  Star,
   Clock,
-  DollarSign
+  Star,
+  Phone,
+  ExternalLink,
+  Locate,
+  X,
+  Fuel,
+  Wrench,
+  ShoppingCart,
+  Coffee,
+  Utensils,
+  Car
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import StoreMapComponent from '../components/FreeMapComponent';
-import storesData from '../data/storesData.json';
+import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
+import L from 'leaflet';
 
-// 簡單的備用地圖組件
-const FallbackMap = ({ onRetry, error }) => (
-  <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-    <div className="text-center p-8 max-w-md">
-      <div className="text-6xl mb-4">
-        {error ? '❌' : '🗺️'}
-      </div>
-      <h3 className="text-lg font-semibold text-gray-700 mb-2">
-        {error ? '地圖載入失敗' : '地圖載入中...'}
-      </h3>
-      <p className="text-gray-500 mb-4">
-        {error ? `錯誤: ${error}` : '正在初始化地圖組件，請稍候...'}
-      </p>
-      {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4 text-left">
-          <p className="text-sm text-red-700">
-            <strong>可能的解決方案：</strong>
-          </p>
-          <ul className="text-xs text-red-600 mt-1 space-y-1">
-            <li>• 檢查網路連線</li>
-            <li>• 清除瀏覽器快取</li>
-            <li>• 重新整理頁面</li>
-          </ul>
-        </div>
-      )}
-      <div className="flex flex-col space-y-2">
-        <button 
-          onClick={onRetry}
-          className="px-6 py-3 bg-bike-500 text-white rounded-xl font-medium hover:bg-bike-600 transition-colors shadow-lg"
-        >
-          重新載入地圖
-        </button>
-        <button 
-          onClick={() => window.location.reload()}
-          className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-300 transition-colors"
-        >
-          重新整理頁面
-        </button>
-      </div>
-    </div>
-  </div>
-);
+// 修復 Leaflet 預設圖標問題
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
 
-const StoreMapPage = () => {
+// 用戶位置圖標
+const createUserIcon = () => {
+  return L.divIcon({
+    className: 'custom-user-marker',
+    html: `<div style="
+      width: 20px;
+      height: 20px;
+      background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+      border: 3px solid #ffffff;
+      border-radius: 50%;
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+    "></div>`,
+    iconSize: [26, 26],
+    iconAnchor: [13, 13],
+  });
+};
+
+// 商家圖標創建函數
+const createStoreIcon = (type) => {
+  const iconMap = {
+    gas: '⛽',
+    repair: '🔧',
+    shop: '🛒',
+    restaurant: '🍽️',
+    cafe: '☕',
+    parking: '🅿️'
+  };
+  
+  const colorMap = {
+    gas: '#ef4444',
+    repair: '#f59e0b',
+    shop: '#10b981',
+    restaurant: '#8b5cf6',
+    cafe: '#f97316',
+    parking: '#6b7280'
+  };
+
+  return L.divIcon({
+    className: 'custom-store-marker',
+    html: `<div style="
+      width: 32px;
+      height: 32px;
+      background: ${colorMap[type] || '#f59e0b'};
+      border: 2px solid #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 16px;
+    ">${iconMap[type] || '📍'}</div>`,
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+  });
+};
+
+// 地圖載入處理組件
+function MapLoadHandler({ onMapReady }) {
+  const map = useMap();
+  
+  useEffect(() => {
+    if (map) {
+      setTimeout(() => {
+        map.invalidateSize();
+        onMapReady();
+      }, 200);
+    }
+  }, [map, onMapReady]);
+  
+  return null;
+}
+
+const FreeMapPage = () => {
   const [currentLocation, setCurrentLocation] = useState(null);
-  const [stores, setStores] = useState([]);
-  const [filteredStores, setFilteredStores] = useState([]);
-  const [categories, setCategories] = useState([]);
+  const [nearbyStores, setNearbyStores] = useState([]);
   const [selectedStore, setSelectedStore] = useState(null);
   const [showStoreDetails, setShowStoreDetails] = useState(false);
-  const [showFilters, setShowFilters] = useState(false);
+  const [mapLoaded, setMapLoaded] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
   const [locationPermissionDenied, setLocationPermissionDenied] = useState(false);
-  
-  // 搜尋和篩選狀態
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategories, setSelectedCategories] = useState([]);
 
-  // 載入店家資料
-  useEffect(() => {
-    setStores(storesData.stores);
-    setFilteredStores(storesData.stores);
-    setCategories(storesData.categories);
-  }, []);
-
-  // 搜尋和篩選邏輯
-  useEffect(() => {
-    let filtered = stores;
-
-    // 搜尋篩選
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(store => 
-        store.name.toLowerCase().includes(query) ||
-        store.address.toLowerCase().includes(query) ||
-        store.description.toLowerCase().includes(query)
-      );
-    }
-
-    // 類別篩選
-    if (selectedCategories.length > 0) {
-      filtered = filtered.filter(store => 
-        selectedCategories.includes(store.type)
-      );
-    }
-
-    setFilteredStores(filtered);
-  }, [stores, searchQuery, selectedCategories]);
+  const categories = [
+    { id: 'all', name: '全部', icon: '🏠', color: '#f59e0b' },
+    { id: 'gas', name: '加油站', icon: '⛽', color: '#ef4444' },
+    { id: 'repair', name: '維修店', icon: '🔧', color: '#f59e0b' },
+    { id: 'shop', name: '機車行', icon: '🛒', color: '#10b981' },
+    { id: 'restaurant', name: '餐廳', icon: '🍽️', color: '#8b5cf6' },
+    { id: 'cafe', name: '咖啡廳', icon: '☕', color: '#f97316' },
+    { id: 'parking', name: '停車場', icon: '🅿️', color: '#6b7280' }
+  ];
 
   // 獲取當前位置
   const getCurrentLocation = useCallback(() => {
     if (!navigator.geolocation) {
-      toast.error('您的瀏覽器不支援定位功能');
+      toast.error('瀏覽器不支援定位功能', {
+        style: { 
+          background: '#1f2937', 
+          color: '#ffffff',
+          fontWeight: '600'
+        }
+      });
       return;
     }
 
@@ -120,26 +144,23 @@ const StoreMapPage = () => {
         };
         setCurrentLocation(location);
         setLocationPermissionDenied(false);
-        toast.success('已取得您的位置');
+        toast.success('位置獲取成功', {
+          style: { 
+            background: '#f59e0b', 
+            color: '#ffffff',
+            fontWeight: '600'
+          }
+        });
       },
       (error) => {
-        console.error('定位失敗:', error);
         setLocationPermissionDenied(true);
-        
-        switch(error.code) {
-          case error.PERMISSION_DENIED:
-            toast.error('定位權限被拒絕，請在瀏覽器設定中允許定位');
-            break;
-          case error.POSITION_UNAVAILABLE:
-            toast.error('無法取得位置資訊');
-            break;
-          case error.TIMEOUT:
-            toast.error('定位請求逾時');
-            break;
-          default:
-            toast.error('定位發生未知錯誤');
-            break;
-        }
+        toast.error('定位失敗，請檢查權限設定', {
+          style: { 
+            background: '#dc2626', 
+            color: '#ffffff',
+            fontWeight: '600'
+          }
+        });
       },
       {
         enableHighAccuracy: true,
@@ -149,180 +170,563 @@ const StoreMapPage = () => {
     );
   }, []);
 
-  // 偵測裝置類型並開啟導航
-  const openNavigation = (store) => {
-    if (!store || !store.location) {
-      toast.error('商家位置資訊不完整');
-      return;
-    }
-
-    const { lat, lng } = store.location;
-    const startLat = currentLocation?.lat || '';
-    const startLng = currentLocation?.lng || '';
-    
-    // Google Maps 網頁版（通用備用方案）
-    const googleWebUrl = startLat && startLng 
-      ? `https://www.google.com/maps/dir/${startLat},${startLng}/${lat},${lng}`
-      : `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
-    
-    try {
-      const newWindow = window.open(googleWebUrl, '_blank');
-      
-      if (!newWindow) {
-        toast.error('請允許彈窗以開啟導航');
-        window.location.href = googleWebUrl;
+  // 模擬附近商家資料
+  useEffect(() => {
+    const mockStores = [
+      {
+        id: '1',
+        name: '中油信義站',
+        type: 'gas',
+        address: '台北市信義區信義路五段100號',
+        phone: '02-2345-6789',
+        rating: 4.2,
+        distance: '0.3km',
+        hours: '24小時營業',
+        location: { lat: 25.0330, lng: 121.5654 },
+        services: ['加油', '便利商店', '洗車'],
+        price: '95無鉛: 30.1元/公升'
+      },
+      {
+        id: '2',
+        name: '阿成機車行',
+        type: 'repair',
+        address: '台北市大安區復興南路一段50號',
+        phone: '02-2345-6780',
+        rating: 4.8,
+        distance: '0.5km',
+        hours: '週一-週六 9:00-18:00',
+        location: { lat: 25.0320, lng: 121.5644 },
+        services: ['維修', '保養', '改裝', '二手車買賣'],
+        specialties: ['機車維修', 'YAMAHA專門', '電瓶更換']
+      },
+      {
+        id: '3',
+        name: '光陽機車',
+        type: 'shop',
+        address: '台北市松山區民生東路三段130號',
+        phone: '02-2345-6781',
+        rating: 4.5,
+        distance: '0.8km',
+        hours: '週一-週日 9:00-21:00',
+        location: { lat: 25.0340, lng: 121.5624 },
+        services: ['新車販售', '二手車', '零配件', '保養'],
+        brands: ['KYMCO', 'SYM', '三陽']
+      },
+      {
+        id: '4',
+        name: '騎士咖啡',
+        type: 'cafe',
+        address: '台北市中山區中山北路二段20號',
+        phone: '02-2345-6782',
+        rating: 4.6,
+        distance: '1.2km',
+        hours: '週一-週日 7:00-22:00',
+        location: { lat: 25.0360, lng: 121.5634 },
+        services: ['咖啡', '輕食', '機車停車', 'WiFi'],
+        specialties: ['機車主題咖啡廳', '車友聚會點', '免費停車']
+      },
+      {
+        id: '5',
+        name: '路邊停車格',
+        type: 'parking',
+        address: '台北市信義區信義路四段',
+        phone: '',
+        rating: 3.8,
+        distance: '0.1km',
+        hours: '24小時開放',
+        location: { lat: 25.0310, lng: 121.5674 },
+        services: ['機車停車', '計時收費'],
+        price: '每小時 10元'
       }
-      
-      toast.success('正在開啟導航應用...', { duration: 2000 });
-      setShowStoreDetails(false);
-      
-    } catch (error) {
-      console.error('導航開啟失敗:', error);
-      window.open(googleWebUrl, '_blank');
-      toast.error('使用網頁版導航開啟');
-    }
-  };
+    ];
 
-  // 獲取位置
+    setNearbyStores(mockStores);
+  }, []);
+
   useEffect(() => {
     getCurrentLocation();
   }, [getCurrentLocation]);
+
+  const filteredStores = nearbyStores.filter(store => {
+    const matchesCategory = selectedCategory === 'all' || store.type === selectedCategory;
+    const matchesSearch = store.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         store.address.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
   const handleStoreClick = (store) => {
     setSelectedStore(store);
     setShowStoreDetails(true);
   };
 
-  const getCategoryData = (type) => {
-    return categories.find(cat => cat.id === type) || 
-           { name: '其他', icon: '📍', color: '#6b7280' };
-  };
+  const handleMapReady = useCallback(() => {
+    setMapLoaded(true);
+  }, []);
 
-  const toggleCategoryFilter = (categoryId) => {
-    setSelectedCategories(prev => 
-      prev.includes(categoryId)
-        ? prev.filter(id => id !== categoryId)
-        : [...prev, categoryId]
-    );
-  };
-
-  const clearFilters = () => {
-    setSearchQuery('');
-    setSelectedCategories([]);
-  };
+  const mapCenter = currentLocation ? [currentLocation.lat, currentLocation.lng] : [25.0330, 121.5654];
+  const mapZoom = currentLocation ? 15 : 12;
 
   return (
-    <div className="relative h-screen bg-gray-100">
-      {/* 商家地圖組件 */}
-      <StoreMapComponent 
-        currentLocation={currentLocation}
-        stores={filteredStores}
-        categories={categories}
-        onStoreClick={handleStoreClick}
-        className="w-full h-full"
-      />
-
-      {/* 頂部搜尋列 */}
-      <div className="absolute top-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-b border-gray-200 p-4 z-20">
-        <div className="flex items-center space-x-3">
-          {/* 搜尋框 */}
-          <div className="flex-1 relative">
-            <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder="搜尋店家名稱或地址..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-bike-500 focus:border-transparent"
-            />
+    <div style={{ 
+      width: '100%', 
+      height: '100vh', 
+      position: 'relative',
+      backgroundColor: '#ffffff',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+    }}>
+      {/* 地圖容器 */}
+      <div style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}>
+        {!mapLoaded && (
+          <div style={{ 
+            position: 'absolute', 
+            top: 0, 
+            left: 0, 
+            width: '100%', 
+            height: '100%', 
+            backgroundColor: '#ffffff', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            zIndex: 50
+          }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ 
+                width: '56px', 
+                height: '56px', 
+                background: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)',
+                borderRadius: '16px', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                margin: '0 auto 20px auto',
+                boxShadow: '0 8px 25px rgba(245, 158, 11, 0.3)'
+              }}>
+                <MapPin size={28} style={{ color: '#ffffff' }} />
+              </div>
+              <p style={{ color: '#111827', fontWeight: '700', fontSize: '18px', marginBottom: '8px' }}>載入地圖</p>
+              <p style={{ color: '#6b7280', fontSize: '14px', fontWeight: '500' }}>OpenStreetMap 免費版</p>
+            </div>
           </div>
-          
-          {/* 篩選按鈕 */}
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className={`p-2 rounded-xl transition-colors ${
-              showFilters || selectedCategories.length > 0
-                ? 'bg-bike-500 text-white' 
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
-          >
-            <Filter size={20} />
-          </button>
-          
-          {/* 定位按鈕 */}
-          <button
-            onClick={getCurrentLocation}
-            className={`p-2 rounded-xl transition-colors ${
-              currentLocation 
-                ? 'bg-emerald-500 text-white' 
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
-          >
-            <Locate size={20} />
-          </button>
-        </div>
+        )}
 
-        {/* 結果統計 */}
-        <div className="flex items-center justify-between mt-3">
-          <div className="text-sm text-gray-600">
-            找到 {filteredStores.length} 個商家
-            {(searchQuery || selectedCategories.length > 0) && (
-              <button
-                onClick={clearFilters}
-                className="ml-2 text-bike-500 hover:text-bike-600 underline"
-              >
-                清除篩選
-              </button>
-            )}
-          </div>
-        </div>
+        <MapContainer
+          center={mapCenter}
+          zoom={mapZoom}
+          style={{ 
+            height: '100%', 
+            width: '100%', 
+            position: 'absolute', 
+            top: 0, 
+            left: 0
+          }}
+          zoomControl={false}
+          scrollWheelZoom={true}
+          attributionControl={false}
+        >
+          <TileLayer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; OpenStreetMap contributors'
+          />
+          
+          <MapLoadHandler onMapReady={handleMapReady} />
+          
+          {/* 用戶位置標記 */}
+          {currentLocation && (
+            <Marker position={[currentLocation.lat, currentLocation.lng]} icon={createUserIcon()}>
+              <Popup className="modern-popup">
+                <div style={{ padding: '8px', minWidth: '120px' }}>
+                  <h3 style={{ fontSize: '14px', fontWeight: '700', color: '#111827', margin: '0 0 4px 0' }}>您的位置</h3>
+                  <p style={{ fontSize: '12px', color: '#6b7280', margin: 0, lineHeight: '1.3', fontWeight: '500' }}>
+                    {currentLocation.lat.toFixed(4)}, {currentLocation.lng.toFixed(4)}
+                  </p>
+                </div>
+              </Popup>
+            </Marker>
+          )}
+
+          {/* 商家標記 */}
+          {filteredStores.map(store => (
+            <Marker 
+              key={store.id} 
+              position={[store.location.lat, store.location.lng]}
+              icon={createStoreIcon(store.type)}
+              eventHandlers={{
+                click: () => handleStoreClick(store)
+              }}
+            >
+              <Popup className="modern-popup">
+                <div style={{ padding: '12px', minWidth: '200px' }}>
+                  <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#111827', margin: '0 0 6px 0' }}>{store.name}</h3>
+                  <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 8px 0', fontWeight: '500' }}>{store.address}</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#9ca3af' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                      <Star size={12} style={{ color: '#fbbf24' }} />
+                      <span style={{ fontWeight: '600' }}>{store.rating}</span>
+                    </div>
+                    <span>•</span>
+                    <span style={{ fontWeight: '600' }}>{store.distance}</span>
+                  </div>
+                </div>
+              </Popup>
+            </Marker>
+          ))}
+        </MapContainer>
       </div>
 
-      {/* 篩選面板 */}
-      {showFilters && (
-        <div className="absolute top-24 left-4 right-4 bg-white rounded-xl shadow-lg border border-gray-200 p-4 z-30">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="font-semibold text-gray-800">類別篩選</h3>
+      {/* 頂部搜索區域 */}
+      {mapLoaded && (
+        <div style={{
+          position: 'absolute',
+          top: '20px',
+          left: '20px',
+          right: '20px',
+          backgroundColor: 'rgba(255, 255, 255, 0.98)',
+          backdropFilter: 'blur(20px)',
+          borderRadius: '16px',
+          padding: '20px',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+          border: '1px solid rgba(245, 158, 11, 0.1)',
+          zIndex: 30
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+            <h1 style={{ fontSize: '20px', fontWeight: '800', color: '#111827', margin: 0 }}>附近商家</h1>
             <button
-              onClick={() => setShowFilters(false)}
-              className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+              onClick={getCurrentLocation}
+              style={{
+                width: '40px',
+                height: '40px',
+                borderRadius: '12px',
+                backgroundColor: currentLocation ? '#f59e0b' : '#f9fafb',
+                color: currentLocation ? '#ffffff' : '#6b7280',
+                border: currentLocation ? 'none' : '1px solid #e5e7eb',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s ease'
+              }}
             >
-              <X size={16} className="text-gray-500" />
+              <Locate size={18} />
             </button>
           </div>
-          
-          <div className="grid grid-cols-3 gap-2">
+
+          {/* 搜索框 */}
+          <div style={{ position: 'relative', marginBottom: '16px' }}>
+            <Search size={18} style={{ 
+              position: 'absolute', 
+              left: '16px', 
+              top: '50%', 
+              transform: 'translateY(-50%)', 
+              color: '#9ca3af' 
+            }} />
+            <input
+              type="text"
+              placeholder="搜索商家名稱或地址..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '12px 16px 12px 48px',
+                borderRadius: '12px',
+                border: '1px solid #e5e7eb',
+                fontSize: '16px',
+                fontWeight: '500',
+                backgroundColor: '#ffffff'
+              }}
+            />
+          </div>
+
+          {/* 分類篩選 */}
+          <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
             {categories.map(category => (
               <button
                 key={category.id}
-                onClick={() => toggleCategoryFilter(category.id)}
-                className={`p-3 rounded-xl border-2 transition-colors text-center ${
-                  selectedCategories.includes(category.id)
-                    ? 'border-bike-500 bg-bike-50 text-bike-700'
-                    : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
-                }`}
+                onClick={() => setSelectedCategory(category.id)}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '20px',
+                  border: 'none',
+                  backgroundColor: selectedCategory === category.id ? '#f59e0b' : '#f9fafb',
+                  color: selectedCategory === category.id ? '#ffffff' : '#6b7280',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  transition: 'all 0.2s ease'
+                }}
               >
-                <div className="text-lg mb-1">{category.icon}</div>
-                <div className="text-xs font-medium">{category.name}</div>
+                <span>{category.icon}</span>
+                {category.name}
               </button>
             ))}
           </div>
         </div>
       )}
 
-      {/* 定位權限提示 */}
-      {locationPermissionDenied && (
-        <div className="absolute top-40 left-4 right-4 bg-yellow-50 border border-yellow-200 rounded-xl p-4 z-30">
-          <div className="flex items-start space-x-3">
-            <AlertCircle size={20} className="text-yellow-600 mt-0.5 flex-shrink-0" />
-            <div className="flex-1">
-              <h3 className="font-medium text-yellow-800">需要定位權限</h3>
-              <p className="text-sm text-yellow-700 mt-1">
-                請允許定位以獲得更精確的導航服務
+      {/* 商家列表 */}
+      {mapLoaded && (
+        <div style={{
+          position: 'absolute',
+          bottom: '20px',
+          left: '20px',
+          right: '20px',
+          maxHeight: '40vh',
+          overflowY: 'auto',
+          zIndex: 25
+        }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {filteredStores.slice(0, 3).map(store => (
+              <div key={store.id} style={{
+                backgroundColor: 'rgba(255, 255, 255, 0.98)',
+                borderRadius: '16px',
+                padding: '16px',
+                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+                border: '1px solid rgba(245, 158, 11, 0.1)',
+                cursor: 'pointer'
+              }}
+              onClick={() => handleStoreClick(store)}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                      <span style={{ fontSize: '16px' }}>{categories.find(c => c.id === store.type)?.icon}</span>
+                      <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#111827', margin: 0 }}>{store.name}</h3>
+                    </div>
+                    <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 6px 0', fontWeight: '500' }}>{store.address}</p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <Star size={12} style={{ color: '#fbbf24' }} />
+                        <span style={{ fontWeight: '600', color: '#111827' }}>{store.rating}</span>
+                      </div>
+                      <span style={{ fontWeight: '600', color: '#f59e0b' }}>{store.distance}</span>
+                      <span style={{ fontWeight: '500', color: '#6b7280' }}>{store.hours}</span>
+                    </div>
+                  </div>
+                  <button style={{
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '8px',
+                    backgroundColor: '#f59e0b',
+                    border: 'none',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#ffffff'
+                  }}>
+                    <Navigation size={14} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 商家詳情彈窗 */}
+      {showStoreDetails && selectedStore && (
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          backdropFilter: 'blur(8px)',
+          display: 'flex',
+          alignItems: 'flex-end',
+          justifyContent: 'center',
+          zIndex: 50,
+          padding: '20px'
+        }}>
+          <div style={{
+            backgroundColor: '#ffffff',
+            borderRadius: '24px',
+            width: '100%',
+            maxWidth: '420px',
+            maxHeight: '75vh',
+            overflowY: 'auto'
+          }}>
+            <div style={{ padding: '28px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '12px',
+                    backgroundColor: '#fef3c7',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '20px'
+                  }}>
+                    {categories.find(c => c.id === selectedStore.type)?.icon}
+                  </div>
+                  <div>
+                    <h3 style={{ fontSize: '20px', fontWeight: '800', color: '#111827', margin: '0 0 4px 0' }}>
+                      {selectedStore.name}
+                    </h3>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <Star size={14} style={{ color: '#fbbf24' }} />
+                        <span style={{ fontWeight: '600', color: '#111827' }}>{selectedStore.rating}</span>
+                      </div>
+                      <span style={{ color: '#d1d5db' }}>•</span>
+                      <span style={{ fontWeight: '600', color: '#f59e0b' }}>{selectedStore.distance}</span>
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowStoreDetails(false)}
+                  style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '10px',
+                    backgroundColor: '#f9fafb',
+                    border: '1px solid #e5e7eb',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  <X size={18} style={{ color: '#6b7280' }} />
+                </button>
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <p style={{ fontSize: '15px', color: '#6b7280', margin: '0 0 12px 0', fontWeight: '500' }}>
+                  <MapPin size={14} style={{ display: 'inline', marginRight: '6px' }} />
+                  {selectedStore.address}
+                </p>
+                {selectedStore.phone && (
+                  <p style={{ fontSize: '15px', color: '#6b7280', margin: '0 0 12px 0', fontWeight: '500' }}>
+                    <Phone size={14} style={{ display: 'inline', marginRight: '6px' }} />
+                    {selectedStore.phone}
+                  </p>
+                )}
+                <p style={{ fontSize: '15px', color: '#6b7280', margin: 0, fontWeight: '500' }}>
+                  <Clock size={14} style={{ display: 'inline', marginRight: '6px' }} />
+                  {selectedStore.hours}
+                </p>
+              </div>
+
+              {selectedStore.services && (
+                <div style={{ marginBottom: '20px' }}>
+                  <h4 style={{ fontSize: '16px', fontWeight: '700', color: '#111827', marginBottom: '12px' }}>服務項目</h4>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                    {selectedStore.services.map((service, index) => (
+                      <span key={index} style={{
+                        padding: '6px 12px',
+                        borderRadius: '12px',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        backgroundColor: '#fef3c7',
+                        color: '#f59e0b'
+                      }}>
+                        {service}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {(selectedStore.price || selectedStore.specialties || selectedStore.brands) && (
+                <div style={{ marginBottom: '20px' }}>
+                  <h4 style={{ fontSize: '16px', fontWeight: '700', color: '#111827', marginBottom: '12px' }}>詳細資訊</h4>
+                  {selectedStore.price && (
+                    <p style={{ fontSize: '14px', color: '#6b7280', margin: '0 0 8px 0', fontWeight: '500' }}>
+                      價格：{selectedStore.price}
+                    </p>
+                  )}
+                  {selectedStore.specialties && (
+                    <p style={{ fontSize: '14px', color: '#6b7280', margin: '0 0 8px 0', fontWeight: '500' }}>
+                      專長：{selectedStore.specialties.join('、')}
+                    </p>
+                  )}
+                  {selectedStore.brands && (
+                    <p style={{ fontSize: '14px', color: '#6b7280', margin: 0, fontWeight: '500' }}>
+                      品牌：{selectedStore.brands.join('、')}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button style={{
+                  flex: 1,
+                  background: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)',
+                  color: '#ffffff',
+                  padding: '14px',
+                  borderRadius: '12px',
+                  fontWeight: '700',
+                  fontSize: '15px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px'
+                }}>
+                  <Navigation size={16} />
+                  導航前往
+                </button>
+                {selectedStore.phone && (
+                  <button style={{
+                    width: '52px',
+                    height: '52px',
+                    backgroundColor: '#f9fafb',
+                    borderRadius: '12px',
+                    border: '1px solid #e5e7eb',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                    <Phone size={20} style={{ color: '#6b7280' }} />
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 權限提示 */}
+      {locationPermissionDenied && mapLoaded && (
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '20px',
+          right: '20px',
+          transform: 'translateY(-50%)',
+          backgroundColor: '#fef3c7',
+          borderRadius: '16px',
+          padding: '20px',
+          border: '2px solid #fbbf24',
+          zIndex: 40
+        }}>
+          <div style={{ display: 'flex', gap: '14px' }}>
+            <MapPin size={24} style={{ color: '#d97706', marginTop: '2px', flexShrink: 0 }} />
+            <div style={{ flex: 1 }}>
+              <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#92400e', margin: '0 0 6px 0' }}>需要位置權限</h3>
+              <p style={{ fontSize: '14px', color: '#b45309', margin: '0 0 12px 0', lineHeight: '1.5', fontWeight: '500' }}>
+                請允許瀏覽器獲取您的位置以找到附近的商家
               </p>
               <button
                 onClick={getCurrentLocation}
-                className="mt-2 text-sm font-medium text-yellow-800 hover:text-yellow-900 underline"
+                style={{
+                  fontSize: '14px',
+                  fontWeight: '700',
+                  color: '#d97706',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  textDecoration: 'underline'
+                }}
               >
                 重新嘗試
               </button>
@@ -331,171 +735,26 @@ const StoreMapPage = () => {
         </div>
       )}
 
-      {/* 商家詳情彈窗 */}
-      {showStoreDetails && selectedStore && (
-        <div className="absolute inset-0 bg-black/50 flex items-end justify-center z-50">
-          <div className="bg-white rounded-t-2xl w-full max-h-[80vh] overflow-y-auto">
-            <div className="p-6">
-              {/* 標題列 */}
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <div className="flex items-center space-x-3 mb-3">
-                    <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-100">
-                      <img
-                        src={selectedStore.image}
-                        alt={selectedStore.name}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.target.src = 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=150';
-                        }}
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-xl font-bold text-gray-800">{selectedStore.name}</h3>
-                      <div className="flex items-center space-x-2 mt-1">
-                        <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
-                          {getCategoryData(selectedStore.type).icon} {getCategoryData(selectedStore.type).name}
-                        </span>
-                        <div className="flex items-center space-x-1">
-                          <Star size={14} className="text-yellow-400 fill-current" />
-                          <span className="text-sm text-gray-600">{selectedStore.rating}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setShowStoreDetails(false)}
-                  className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
-                >
-                  <X size={20} className="text-gray-500" />
-                </button>
-              </div>
-
-              {/* 描述 */}
-              <div className="bg-gray-50 rounded-xl p-4 mb-4">
-                <p className="text-gray-700">{selectedStore.description}</p>
-              </div>
-
-              {/* 詳細資訊 */}
-              <div className="grid grid-cols-1 gap-4 mb-6">
-                {/* 地址 */}
-                <div className="flex items-start space-x-3">
-                  <MapPin size={18} className="text-gray-500 mt-1 flex-shrink-0" />
-                  <div>
-                    <p className="text-gray-800 font-medium">地址</p>
-                    <p className="text-gray-600 text-sm">{selectedStore.address}</p>
-                  </div>
-                </div>
-
-                {/* 電話 */}
-                {selectedStore.phone && (
-                  <div className="flex items-center space-x-3">
-                    <Phone size={18} className="text-gray-500 flex-shrink-0" />
-                    <div>
-                      <p className="text-gray-800 font-medium">電話</p>
-                      <a 
-                        href={`tel:${selectedStore.phone}`}
-                        className="text-blue-600 text-sm hover:underline"
-                      >
-                        {selectedStore.phone}
-                      </a>
-                    </div>
-                  </div>
-                )}
-
-                {/* 營業時間 */}
-                <div className="flex items-center space-x-3">
-                  <Clock size={18} className="text-gray-500 flex-shrink-0" />
-                  <div>
-                    <p className="text-gray-800 font-medium">營業時間</p>
-                    <p className="text-gray-600 text-sm">{selectedStore.openHours}</p>
-                  </div>
-                </div>
-
-                {/* 價格範圍 */}
-                <div className="flex items-center space-x-3">
-                  <DollarSign size={18} className="text-gray-500 flex-shrink-0" />
-                  <div>
-                    <p className="text-gray-800 font-medium">價格範圍</p>
-                    <p className="text-gray-600 text-sm">{selectedStore.priceRange}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* 服務項目 */}
-              {selectedStore.services && selectedStore.services.length > 0 && (
-                <div className="mb-6">
-                  <p className="text-gray-800 font-medium mb-2">服務項目</p>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedStore.services.map((service, index) => (
-                      <span
-                        key={index}
-                        className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs"
-                      >
-                        {service}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* 動作按鈕 */}
-              <div className="space-y-3 pt-4 border-t border-gray-200">
-                {/* 主要導航按鈕 */}
-                <button 
-                  onClick={() => openNavigation(selectedStore)}
-                  className="w-full bg-bike-500 text-white py-3 rounded-xl font-medium hover:bg-bike-600 transition-colors flex items-center justify-center"
-                >
-                  <Navigation size={18} className="mr-2" />
-                  前往導航
-                </button>
-                
-                {/* 其他選項 */}
-                <div className="grid grid-cols-3 gap-2">
-                  {/* Google Maps 網頁版 */}
-                  <button
-                    onClick={() => {
-                      const url = currentLocation 
-                        ? `https://www.google.com/maps/dir/${currentLocation.lat},${currentLocation.lng}/${selectedStore.location.lat},${selectedStore.location.lng}`
-                        : `https://www.google.com/maps/search/?api=1&query=${selectedStore.location.lat},${selectedStore.location.lng}`;
-                      window.open(url, '_blank');
-                      toast.success('開啟 Google Maps');
-                      setShowStoreDetails(false);
-                    }}
-                    className="py-2 px-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
-                  >
-                    🗺️ Google
-                  </button>
-                  
-                  {/* 電話 */}
-                  {selectedStore.phone && (
-                    <a
-                      href={`tel:${selectedStore.phone}`}
-                      className="py-2 px-3 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors text-sm text-center"
-                    >
-                      📞 撥號
-                    </a>
-                  )}
-                  
-                  {/* 複製地址 */}
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(selectedStore.address);
-                      toast.success('地址已複製');
-                    }}
-                    className="py-2 px-3 bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 transition-colors text-sm"
-                  >
-                    📋 地址
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+      {/* 版權信息 */}
+      {mapLoaded && (
+        <div style={{
+          position: 'absolute',
+          bottom: '12px',
+          right: '12px',
+          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+          padding: '6px 10px',
+          borderRadius: '8px',
+          fontSize: '11px',
+          color: '#6b7280',
+          fontWeight: '600',
+          border: '1px solid rgba(245, 158, 11, 0.1)',
+          zIndex: 10
+        }}>
+          © OpenStreetMap
         </div>
       )}
     </div>
   );
 };
 
-export default StoreMapPage; 
+export default FreeMapPage; 
