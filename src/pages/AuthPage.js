@@ -111,7 +111,7 @@ const AuthPage = () => {
             color: '#111827', 
             margin: '0 0 8px 0' 
           }}>
-            BikeConnect
+            騎騎
           </h1>
           <p style={{ 
             fontSize: '16px', 
