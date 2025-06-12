@@ -1,17 +1,19 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Home, Users, MessageSquare, Map, User } from 'lucide-react';
 
 const BottomNavigation = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
 
   const navItems = [
-    { icon: Home, label: '首頁', path: '/' },
-    { icon: MessageSquare, label: '社群', path: '/social' },
-    { icon: Users, label: '揪團', path: '/groups' },
-    { icon: Map, label: '地圖', path: '/map' },
-    { icon: User, label: '個人', path: '/profile' }
+    { icon: Home, label: t('navigation.home'), path: '/' },
+    { icon: MessageSquare, label: t('navigation.social'), path: '/social' },
+    { icon: Users, label: t('navigation.groups'), path: '/groups' },
+    { icon: Map, label: t('navigation.map'), path: '/map' },
+    { icon: User, label: t('navigation.profile'), path: '/profile' }
   ];
 
   const isActive = (path) => location.pathname === path;

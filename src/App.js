@@ -3,6 +3,9 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import BottomNavigation from './components/ui/BottomNavigation';
 
+// i18n 初始化
+import './i18n';
+
 // Pages
 import HomePage from './pages/HomePage';
 import SocialPage from './pages/SocialPage';
