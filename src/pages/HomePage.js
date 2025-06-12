@@ -1,16 +1,25 @@
 import React, { useState } from 'react';
 import { 
+  Camera, 
   MapPin, 
-  Users, 
-  Calendar,
+  Calendar, 
+  Edit3,
+  Heart,
+  Share2,
+  ChevronRight,
+  Users,
   Trophy,
   TrendingUp,
   Plus,
   ArrowRight,
   Clock
 } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import PageTransition from '../components/ui/PageTransition';
+import RideStatCard from '../components/ui/RideStatCard';
+import SectionTitle from '../components/ui/SectionTitle';
 
 const HomePage = () => {
   const [todayStats] = useState({
@@ -133,85 +142,154 @@ const HomePage = () => {
     }
   };
 
+  const navigate = useNavigate();
+  const user = useAuth().user;
+
+  const getGreeting = () => {
+    const now = new Date();
+    const hours = now.getHours();
+    if (hours < 12) {
+      return '早安';
+    } else if (hours < 18) {
+      return '午安';
+    } else {
+      return '晚安';
+    }
+  };
+
   return (
-    <div style={{ 
-      minHeight: '100vh', 
-      backgroundColor: '#ffffff',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
-    }}>
-      {/* 頂部問候區域 */}
+    <PageTransition>
       <div style={{
-        background: 'linear-gradient(135deg, #dc2626 0%, #ef4444 100%)',
-        padding: '40px 20px 60px 20px',
-        borderRadius: '0 0 32px 32px',
-        marginBottom: '20px'
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #fef2f2 0%, #ffffff 100%)',
+        paddingBottom: '80px'
       }}>
-        <div style={{ maxWidth: '400px', margin: '0 auto' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
-            <div style={{
-              width: '64px',
-              height: '64px',
-              borderRadius: '50%',
-              background: 'rgba(255, 255, 255, 0.2)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              border: '3px solid rgba(255, 255, 255, 0.3)'
-            }}>
-              <span style={{ fontSize: '24px', fontWeight: '700', color: '#ffffff' }}>李</span>
-            </div>
-            <div>
-              <h1 style={{ fontSize: '24px', fontWeight: '800', color: '#ffffff', margin: 0 }}>早安，小明！</h1>
-              <p style={{ fontSize: '14px', color: '#ffffff', margin: 0, opacity: 0.9, fontWeight: '500' }}>今天是騎行的好日子</p>
+        {/* 头部用户信息 */}
+        <div style={{
+          background: 'linear-gradient(135deg, #dc2626 0%, #ef4444 100%)',
+          padding: '60px 20px 40px 20px',
+          color: 'white'
+        }}>
+          <div style={{
+            maxWidth: '400px',
+            margin: '0 auto',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '16px'
+          }}>
+            <img
+              src={user?.avatar || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150'}
+              alt="用戶頭像"
+              style={{
+                width: '60px',
+                height: '60px',
+                borderRadius: '50%',
+                objectFit: 'cover',
+                border: '3px solid rgba(255, 255, 255, 0.3)'
+              }}
+            />
+            <div style={{ flex: 1 }}>
+              <h1 style={{
+                fontSize: '24px',
+                fontWeight: '800',
+                margin: '0 0 4px 0'
+              }}>
+                {getGreeting()}，{user?.name || '騎士'}！
+              </h1>
+              <p style={{
+                fontSize: '16px',
+                opacity: 0.9,
+                margin: '0'
+              }}>
+                今天準備好騎行了嗎？
+              </p>
             </div>
           </div>
 
-          {/* 今日數據卡片 */}
+          {/* 今日统计 */}
           <div style={{
-            backgroundColor: 'rgba(255, 255, 255, 0.95)',
-            borderRadius: '20px',
-            padding: '24px',
-            boxShadow: '0 8px 25px rgba(0, 0, 0, 0.1)'
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: '16px',
+            marginTop: '24px',
+            maxWidth: '400px',
+            margin: '24px auto 0 auto'
           }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '28px', fontWeight: '900', color: '#111827', marginBottom: '4px' }}>
-                  {todayStats.distance}
-                </div>
-                <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: '600' }}>距離(km)</div>
+            <div style={{
+              background: 'rgba(255, 255, 255, 0.2)',
+              borderRadius: '16px',
+              padding: '16px',
+              textAlign: 'center'
+            }}>
+              <div style={{
+                fontSize: '20px',
+                fontWeight: '800',
+                marginBottom: '4px'
+              }}>
+                {todayStats.distance}km
               </div>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '28px', fontWeight: '900', color: '#111827', marginBottom: '4px' }}>
-                  {todayStats.time}
-                </div>
-                <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: '600' }}>騎行時間(分)</div>
+              <div style={{ fontSize: '12px', opacity: 0.9 }}>今日騎行</div>
+            </div>
+            <div style={{
+              background: 'rgba(255, 255, 255, 0.2)',
+              borderRadius: '16px',
+              padding: '16px',
+              textAlign: 'center'
+            }}>
+              <div style={{
+                fontSize: '20px',
+                fontWeight: '800',
+                marginBottom: '4px'
+              }}>
+                {todayStats.time}
               </div>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '28px', fontWeight: '900', color: '#111827', marginBottom: '4px' }}>
-                  {todayStats.calories}
-                </div>
-                <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: '600' }}>燃燒卡路里</div>
+              <div style={{ fontSize: '12px', opacity: 0.9 }}>騎行時間</div>
+            </div>
+            <div style={{
+              background: 'rgba(255, 255, 255, 0.2)',
+              borderRadius: '16px',
+              padding: '16px',
+              textAlign: 'center'
+            }}>
+              <div style={{
+                fontSize: '20px',
+                fontWeight: '800',
+                marginBottom: '4px'
+              }}>
+                {todayStats.calories}
               </div>
+              <div style={{ fontSize: '12px', opacity: 0.9 }}>燃燒卡路里</div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div style={{ maxWidth: '400px', margin: '0 auto', padding: '0 20px' }}>
-        {/* 快速操作 */}
-        <div style={{ marginBottom: '32px' }}>
-          <h2 style={{ fontSize: '20px', fontWeight: '800', color: '#111827', marginBottom: '16px' }}>快速開始</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
+        <div style={{ maxWidth: '400px', margin: '0 auto', padding: '0 20px' }}>
+          {/* 快速操作 */}
+          <SectionTitle 
+            title="快速開始" 
+            subtitle="選擇你想要的騎行活動"
+            icon={MapPin}
+          />
+          
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', marginBottom: '32px' }}>
             <button
               onClick={() => handleQuickAction('record')}
               style={{
                 backgroundColor: '#ffffff',
-                border: '1px solid #dc2626',
+                border: '2px solid #dc262620',
                 borderRadius: '16px',
                 padding: '20px',
                 cursor: 'pointer',
                 transition: 'all 0.2s ease',
                 textAlign: 'left'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = 'translateY(-2px)';
+                e.target.style.boxShadow = '0 8px 25px rgba(220, 38, 38, 0.15)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.boxShadow = 'none';
               }}
             >
               <div style={{
@@ -234,12 +312,20 @@ const HomePage = () => {
               onClick={() => handleQuickAction('explore')}
               style={{
                 backgroundColor: '#ffffff',
-                border: '1px solid #dc2626',
+                border: '2px solid #dc262620',
                 borderRadius: '16px',
                 padding: '20px',
                 cursor: 'pointer',
                 transition: 'all 0.2s ease',
                 textAlign: 'left'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = 'translateY(-2px)';
+                e.target.style.boxShadow = '0 8px 25px rgba(220, 38, 38, 0.15)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.boxShadow = 'none';
               }}
             >
               <div style={{
@@ -262,12 +348,20 @@ const HomePage = () => {
               onClick={() => handleQuickAction('friends')}
               style={{
                 backgroundColor: '#ffffff',
-                border: '1px solid #dc2626',
+                border: '2px solid #dc262620',
                 borderRadius: '16px',
                 padding: '20px',
                 cursor: 'pointer',
                 transition: 'all 0.2s ease',
                 textAlign: 'left'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = 'translateY(-2px)';
+                e.target.style.boxShadow = '0 8px 25px rgba(220, 38, 38, 0.15)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.boxShadow = 'none';
               }}
             >
               <div style={{
@@ -290,12 +384,20 @@ const HomePage = () => {
               onClick={() => handleQuickAction('events')}
               style={{
                 backgroundColor: '#ffffff',
-                border: '1px solid #dc2626',
+                border: '2px solid #dc262620',
                 borderRadius: '16px',
                 padding: '20px',
                 cursor: 'pointer',
                 transition: 'all 0.2s ease',
                 textAlign: 'left'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = 'translateY(-2px)';
+                e.target.style.boxShadow = '0 8px 25px rgba(220, 38, 38, 0.15)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.boxShadow = 'none';
               }}
             >
               <div style={{
@@ -314,22 +416,22 @@ const HomePage = () => {
               <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: '500' }}>組織騎行活動</div>
             </button>
           </div>
-        </div>
 
-        {/* 本週進度 */}
-        <div style={{ marginBottom: '32px' }}>
+          {/* 本週進度 */}
+          <SectionTitle 
+            title="本週目標" 
+            subtitle="追蹤你的騎行進度"
+            icon={Trophy}
+          />
+          
           <div style={{
             backgroundColor: '#ffffff',
             borderRadius: '20px',
             padding: '24px',
-            border: '1px solid #ef4444',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)'
+            border: '2px solid #ef444420',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
+            marginBottom: '32px'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-              <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#111827', margin: 0 }}>本週目標</h3>
-              <Trophy size={20} style={{ color: '#dc2626' }} />
-            </div>
-
             <div style={{ marginBottom: '16px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                 <span style={{ fontSize: '14px', fontWeight: '600', color: '#111827' }}>騎行進度</span>
@@ -345,10 +447,11 @@ const HomePage = () => {
                 overflow: 'hidden'
               }}>
                 <div style={{
-                  width: `${weeklyProgress.current}%`,
+                  width: `${(weeklyProgress.current / weeklyProgress.goal) * 100}%`,
                   height: '100%',
                   background: 'linear-gradient(90deg, #dc2626 0%, #ef4444 100%)',
-                  borderRadius: '4px'
+                  borderRadius: '4px',
+                  transition: 'width 0.3s ease'
                 }} />
               </div>
             </div>
@@ -371,114 +474,125 @@ const HomePage = () => {
               </div>
             </div>
           </div>
-        </div>
 
-        {/* 即將到來的活動 */}
-        <div style={{ marginBottom: '32px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-            <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#111827', margin: 0 }}>即將到來</h3>
-            <button style={{
-              fontSize: '14px',
-              fontWeight: '600',
-              color: '#dc2626',
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px'
-            }}>
-              查看更多 <ArrowRight size={14} />
-            </button>
-          </div>
+          {/* 即將到來的活動 */}
+          <SectionTitle 
+            title="即將到來" 
+            subtitle="不要錯過精彩活動"
+            icon={Calendar}
+            action={() => navigate('/groups')}
+            actionText="查看全部"
+          />
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {upcomingEvents.map(event => (
-              <div key={event.id} style={{
-                backgroundColor: '#ffffff',
-                borderRadius: '16px',
-                padding: '20px',
-                border: '1px solid #f3f4f6',
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease'
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {upcomingEvents.map((event, index) => (
+              <div
+                key={event.id}
+                style={{
+                  backgroundColor: '#ffffff',
+                  borderRadius: '16px',
+                  padding: '20px',
+                  border: '2px solid #f3f4f6',
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'translateY(-2px)';
+                  e.target.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.1)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.05)';
+                }}
+              >
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'flex-start',
+                  marginBottom: '12px'
+                }}>
                   <div>
-                    <h4 style={{ fontSize: '16px', fontWeight: '700', color: '#111827', margin: '0 0 4px 0' }}>
+                    <h4 style={{
+                      fontSize: '16px',
+                      fontWeight: '700',
+                      color: '#111827',
+                      margin: '0 0 4px 0'
+                    }}>
                       {event.title}
                     </h4>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '12px', color: '#6b7280' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <Calendar size={12} />
-                        <span style={{ fontWeight: '600' }}>{event.date}</span>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <Clock size={12} />
-                        <span style={{ fontWeight: '600' }}>{event.time}</span>
-                      </div>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      marginBottom: '8px'
+                    }}>
+                      <MapPin size={14} color="#6b7280" />
+                      <span style={{
+                        fontSize: '14px',
+                        color: '#6b7280'
+                      }}>
+                        {event.location}
+                      </span>
                     </div>
                   </div>
-                  <span style={{
+                  <div style={{
+                    background: getDifficultyColor(event.difficulty),
+                    color: 'white',
                     padding: '4px 8px',
                     borderRadius: '6px',
-                    fontSize: '10px',
-                    fontWeight: '700',
-                    backgroundColor: event.difficulty === 'beginner' ? '#dcfce7' : event.difficulty === 'advanced' ? '#fee2e2' : '#fee2e2',
-                    color: getDifficultyColor(event.difficulty)
+                    fontSize: '12px',
+                    fontWeight: '600'
                   }}>
                     {getDifficultyText(event.difficulty)}
-                  </span>
-                </div>
-                <div style={{ fontSize: '12px', color: '#9ca3af', fontWeight: '600' }}>
-                  {event.participants}/{event.maxParticipants} 人參加
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* 最近活動 */}
-        <div style={{ marginBottom: '32px' }}>
-          <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#111827', marginBottom: '16px' }}>最近活動</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {recentActivities.map(activity => (
-              <div key={activity.id} style={{
-                backgroundColor: '#ffffff',
-                borderRadius: '16px',
-                padding: '20px',
-                border: '1px solid #f3f4f6',
-                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: '14px', fontWeight: '700', color: '#111827', marginBottom: '4px' }}>
-                      {activity.type}
-                    </div>
-                    {activity.distance && (
-                      <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '2px', fontWeight: '600' }}>
-                        {activity.distance} • {activity.time}
-                      </div>
-                    )}
-                    {activity.name && (
-                      <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '2px', fontWeight: '600' }}>
-                        {activity.name} • {activity.participants} 人參加
-                      </div>
-                    )}
-                    {activity.achievement && (
-                      <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '2px', fontWeight: '600' }}>
-                        {activity.achievement} • 獲得 {activity.reward}
-                      </div>
-                    )}
                   </div>
-                  <div style={{ fontSize: '12px', color: '#9ca3af', fontWeight: '600' }}>{activity.date}</div>
+                </div>
+
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center'
+                }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '16px'
+                  }}>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}>
+                      <Calendar size={14} color="#6b7280" />
+                      <span style={{
+                        fontSize: '14px',
+                        color: '#6b7280'
+                      }}>
+                        {event.date}
+                      </span>
+                    </div>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}>
+                      <Users size={14} color="#6b7280" />
+                      <span style={{
+                        fontSize: '14px',
+                        color: '#6b7280'
+                      }}>
+                        {event.participants}人參加
+                      </span>
+                    </div>
+                  </div>
+                  <ChevronRight size={16} color="#9ca3af" />
                 </div>
               </div>
             ))}
           </div>
         </div>
       </div>
-    </div>
+    </PageTransition>
   );
 };
 
