@@ -21,11 +21,11 @@ import {
   ChevronRight,
   Star
 } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import { useUserStore } from '../stores/userStore';
 import toast from 'react-hot-toast';
 
 const ProfilePage = () => {
-  const { user, updateUser } = useAuth();
+  const { userProfile, updateUser } = useUserStore();
   const [isEditing, setIsEditing] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState(null);
   const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
@@ -61,9 +61,9 @@ const ProfilePage = () => {
   ]);
 
   const [editedUser, setEditedUser] = useState({
-    name: user?.name || '',
-    bio: user?.bio || '',
-    location: user?.location || ''
+    name: userProfile?.name || userProfile?.displayName || '',
+    bio: userProfile?.bio || '',
+    location: userProfile?.location || ''
   });
 
   const [achievements] = useState([
@@ -241,7 +241,7 @@ const ProfilePage = () => {
         <div style={{ textAlign: 'center', marginBottom: '20px' }}>
           <div style={{ position: 'relative', display: 'inline-block' }}>
             <img
-              src={user?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150'}
+              src={userProfile?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150'}
               alt="個人頭像"
               style={{
                 width: '80px',
@@ -395,7 +395,7 @@ const ProfilePage = () => {
             <div style={{ display: 'flex', gap: '16px', flex: 1 }}>
               <div style={{ position: 'relative' }}>
                 <img
-                  src={user?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150'}
+                  src={userProfile?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150'}
                   alt="個人頭像"
                   style={{
                     width: '80px',
@@ -405,7 +405,7 @@ const ProfilePage = () => {
                     border: '4px solid rgba(255, 255, 255, 0.3)'
                   }}
                 />
-                {user?.verified && (
+                {userProfile?.verified && (
                   <div style={{
                     position: 'absolute',
                     bottom: '2px',
@@ -426,7 +426,7 @@ const ProfilePage = () => {
               
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                  <h1 style={{ fontSize: '20px', fontWeight: '800', color: '#ffffff', margin: 0 }}>{user?.name || '騎行者'}</h1>
+                  <h1 style={{ fontSize: '20px', fontWeight: '800', color: '#ffffff', margin: 0 }}>{userProfile?.name || '騎行者'}</h1>
                   <span style={{
                     padding: '2px 8px',
                     borderRadius: '12px',
@@ -435,22 +435,22 @@ const ProfilePage = () => {
                     backgroundColor: 'rgba(255, 255, 255, 0.2)',
                     color: '#ffffff'
                   }}>
-                    {user?.level || '騎行者'}
+                    {userProfile?.level || '騎行者'}
                   </span>
                 </div>
                 <p style={{ fontSize: '14px', color: '#ffffff', margin: '0 0 8px 0', opacity: 0.8, fontWeight: '500' }}>
-                  {user?.username || '@bikerlee'}
+                  {userProfile?.username || '@bikerlee'}
                 </p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <MapPin size={12} style={{ color: '#ffffff', opacity: 0.8 }} />
-                    <span style={{ fontSize: '12px', color: '#ffffff', opacity: 0.8, fontWeight: '500' }}>{user?.location || '台北市'}</span>
+                    <span style={{ fontSize: '12px', color: '#ffffff', opacity: 0.8, fontWeight: '500' }}>{userProfile?.location || '台北市'}</span>
                   </div>
                   <span style={{ color: '#ffffff', opacity: 0.5 }}>•</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <Calendar size={12} style={{ color: '#ffffff', opacity: 0.8 }} />
                     <span style={{ fontSize: '12px', color: '#ffffff', opacity: 0.8, fontWeight: '500' }}>
-                      {new Date(user?.joinDate || '2023-01-15').toLocaleDateString('zh-TW')} 加入
+                      {new Date(userProfile?.joinDate || '2023-01-15').toLocaleDateString('zh-TW')} 加入
                     </span>
                   </div>
                 </div>
@@ -502,7 +502,7 @@ const ProfilePage = () => {
             opacity: 0.9,
             fontWeight: '500'
           }}>
-            {user?.bio || '熱愛騎行的自由靈魂，喜歡探索城市的每個角落 🚴‍♂️'}
+            {userProfile?.bio || '熱愛騎行的自由靈魂，喜歡探索城市的每個角落 🚴‍♂️'}
           </p>
 
           {/* 統計數據 */}
@@ -516,19 +516,19 @@ const ProfilePage = () => {
           }}>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '24px', fontWeight: '900', color: '#111827', marginBottom: '4px' }}>
-                {user?.stats?.totalDistance || '1,235'}
+                {userProfile?.stats?.totalDistance || '1,235'}
               </div>
               <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: '600' }}>總里程 (km)</div>
             </div>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '24px', fontWeight: '900', color: '#111827', marginBottom: '4px' }}>
-                {user?.stats?.totalRides || '89'}
+                {userProfile?.stats?.totalRides || '89'}
               </div>
               <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: '600' }}>騎行次數</div>
             </div>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '24px', fontWeight: '900', color: '#111827', marginBottom: '4px' }}>
-                {user?.stats?.avgSpeed || '15.2'}
+                {userProfile?.stats?.avgSpeed || '15.2'}
               </div>
               <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: '600' }}>平均時速</div>
             </div>
@@ -543,7 +543,7 @@ const ProfilePage = () => {
               padding: '12px 16px',
               textAlign: 'center'
             }}>
-              <div style={{ fontSize: '18px', fontWeight: '800', color: '#111827' }}>{user?.stats?.followers || '245'}</div>
+              <div style={{ fontSize: '18px', fontWeight: '800', color: '#111827' }}>{userProfile?.stats?.followers || '245'}</div>
               <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: '600' }}>追蹤者</div>
             </div>
             <div style={{
@@ -553,7 +553,7 @@ const ProfilePage = () => {
               padding: '12px 16px',
               textAlign: 'center'
             }}>
-              <div style={{ fontSize: '18px', fontWeight: '800', color: '#111827' }}>{user?.stats?.following || '189'}</div>
+              <div style={{ fontSize: '18px', fontWeight: '800', color: '#111827' }}>{userProfile?.stats?.following || '189'}</div>
               <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: '600' }}>正在追蹤</div>
             </div>
             <div style={{
@@ -563,7 +563,7 @@ const ProfilePage = () => {
               padding: '12px 16px',
               textAlign: 'center'
             }}>
-              <div style={{ fontSize: '18px', fontWeight: '800', color: '#111827' }}>{user?.stats?.achievements || '15'}</div>
+              <div style={{ fontSize: '18px', fontWeight: '800', color: '#111827' }}>{userProfile?.stats?.achievements || '15'}</div>
               <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: '600' }}>成就</div>
             </div>
           </div>

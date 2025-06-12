@@ -12,11 +12,11 @@ import {
   Search,
   X
 } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import { useUserStore } from '../stores/userStore';
 import toast from 'react-hot-toast';
 
 const GroupsPage = () => {
-  const { user } = useAuth();
+  const { user } = useUserStore();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('all'); // all, joined, created
   const [events, setEvents] = useState([]);

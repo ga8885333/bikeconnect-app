@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { User, Mail, Lock, Eye, EyeOff, Phone, MapPin, Smartphone } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import { useUserStore } from '../stores/userStore';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
 const AuthPage = () => {
-  const { login, register, loginWithGoogle, loginWithPhone, verifyPhoneCode } = useAuth();
+  const { login, register, loading } = useUserStore();
   const [authMode, setAuthMode] = useState('login'); // 'login', 'register', 'phone'
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -54,11 +54,16 @@ const AuthPage = () => {
 
     try {
       if (authMode === 'login') {
-        await login(formData.email, formData.password);
+        const result = await login(formData.email, formData.password);
+        if (result.success) {
+          navigate('/');
+        }
       } else if (authMode === 'register') {
-        await register(formData);
+        const result = await register(formData);
+        if (result.success) {
+          navigate('/');
+        }
       }
-      navigate('/');
     } catch (error) {
       console.error('Auth error:', error);
     } finally {
@@ -69,7 +74,10 @@ const AuthPage = () => {
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     try {
-      await loginWithGoogle();
+      const result = await login('', '', 'google');
+      if (result.success) {
+        navigate('/');
+      }
     } catch (error) {
       console.error('Google login error:', error);
     } finally {
@@ -82,13 +90,8 @@ const AuthPage = () => {
     setIsLoading(true);
     
     try {
-      const result = await loginWithPhone(phoneVerification.phoneNumber);
-      if (result.success) {
-        setPhoneVerification({
-          ...phoneVerification,
-          confirmationResult: result.confirmationResult
-        });
-      }
+      // Phone login functionality would need to be implemented in the store
+      console.log('Phone login not yet implemented with Zustand');
     } catch (error) {
       console.error('Phone login error:', error);
     } finally {
@@ -101,7 +104,8 @@ const AuthPage = () => {
     setIsLoading(true);
 
     try {
-      await verifyPhoneCode(phoneVerification.confirmationResult, phoneVerification.verificationCode);
+      // Phone verification would need to be implemented in the store
+      console.log('Phone verification not yet implemented with Zustand');
     } catch (error) {
       console.error('Verification error:', error);
     } finally {

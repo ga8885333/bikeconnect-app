@@ -21,11 +21,11 @@ import {
   Filter,
   Search
 } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import { useUserStore } from '../stores/userStore';
 import toast from 'react-hot-toast';
 
 const SocialPage = () => {
-  const { user } = useAuth();
+  const { user } = useUserStore();
   const [posts, setPosts] = useState([]);
   const [activeTab, setActiveTab] = useState('all'); // all, following, popular
   const [showCreateModal, setShowCreateModal] = useState(false);

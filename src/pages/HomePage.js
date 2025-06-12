@@ -9,13 +9,15 @@ import {
   Map,
   Zap,
   Navigation,
-  Plus
+  Plus,
+  MessageCircle,
+  ArrowRight
 } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import { useUserStore } from '../stores/userStore';
 import toast from 'react-hot-toast';
 
 const HomePage = () => {
-  const { user } = useAuth();
+  const { userProfile } = useUserStore();
   const navigate = useNavigate();
   
   const [todayStats] = useState({
@@ -63,7 +65,7 @@ const HomePage = () => {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold mb-2">
-              歡迎回來, {user?.name || '騎行者'}! 👋
+              歡迎回來, {userProfile?.name || '騎行者'}! 👋
             </h1>
             <p className="text-red-100">
               {new Date().toLocaleDateString('zh-TW', { 
