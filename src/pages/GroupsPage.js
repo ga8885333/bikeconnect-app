@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Plus, 
   Calendar, 
@@ -8,11 +9,15 @@ import {
   Star, 
   MessageSquare,
   Filter,
-  Search
+  Search,
+  X
 } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
 
 const GroupsPage = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('all'); // all, joined, created
   const [events, setEvents] = useState([]);
   const [showCreateModal, setShowCreateModal] = useState(false);

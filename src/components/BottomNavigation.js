@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Users, Map, MessageSquare, User, ShoppingBag } from 'lucide-react';
+import { Home, Users, Map, MessageSquare, User, Trophy } from 'lucide-react';
 
 const BottomNavigation = () => {
   const navigate = useNavigate();
@@ -29,11 +29,11 @@ const BottomNavigation = () => {
       color: 'text-purple-500'
     },
     {
-      id: 'market',
-      path: '/market',
-      icon: ShoppingBag,
-      label: '商城',
-      color: 'text-blue-500'
+      id: 'achievements',
+      path: '/achievements',
+      icon: Trophy,
+      label: '成就',
+      color: 'text-yellow-500'
     },
     {
       id: 'social',
